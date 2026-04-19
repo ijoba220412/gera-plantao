@@ -9,37 +9,31 @@
         :root { --primary: #0056b3; --bg: #f0f2f5; --white: #ffffff; --text: #333; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: var(--bg); display: flex; height: 100vh; color: var(--text); }
         
-        /* Menu Lateral */
         .sidebar { width: 240px; background: var(--primary); color: white; padding: 20px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
         .nav-btn { background: none; border: none; color: white; padding: 14px; text-align: left; cursor: pointer; border-radius: 8px; transition: 0.2s; font-size: 15px; }
         .nav-btn.active { background: rgba(255,255,255,0.2); font-weight: bold; }
         
-        /* Conteúdo Principal */
         .content { flex: 1; padding: 30px; overflow-y: auto; }
         .view-section { display: none; animation: fadeIn 0.3s; }
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        /* Layout de Cards */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
         .card { background: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 5px solid var(--primary); position: relative; }
         .card h3 { margin: 0 0 10px 0; color: var(--primary); font-size: 18px; }
         
-        /* Botões e Badges */
         .btn-add { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .btn-edit-outline { width:100%; margin-top:12px; border:1px solid var(--primary); background:none; color:var(--primary); padding:8px; border-radius:5px; cursor:pointer; font-weight: 600; }
         .badge { background: #e9ecef; padding: 4px 8px; border-radius: 10px; font-size: 11px; margin: 2px; display: inline-block; font-weight: bold; color: #555; }
-        
-        /* Modais */
+        .badge-vinculo { background: #0056b3; color: white; padding: 3px 7px; border-radius: 5px; font-size: 10px; margin-right: 3px; }
+
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center; }
         .modal-content { background: white; padding: 25px; border-radius: 15px; width: 95%; max-width: 550px; max-height: 90vh; overflow-y: auto; }
         label { display: block; margin-top: 15px; font-weight: bold; font-size: 14px; }
         input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .block-regra { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-top: 15px; border-left: 4px solid var(--primary); }
-
-        /* Lista de Afastamentos */
         .item-afastamento { display:flex; justify-content:space-between; background:#fff; border:1px solid #ddd; padding:10px; margin-top:8px; border-radius:6px; font-size:13px; }
         .btn-remover { color: red; background: none; border: none; font-weight: bold; cursor: pointer; }
 
@@ -80,16 +74,12 @@
         <section id="view-escala" class="view-section">
             <div class="header"><h1>Gerador de Escala</h1></div>
             <div class="card" style="max-width: 450px;">
-                <p>O algoritmo processará as restrições de cada funcionário e as regras de cada vínculo.</p>
                 <label>Mês:</label>
                 <select id="gen-mes">
-                    <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
                     <option value="4" selected>Abril</option><option value="5">Maio</option><option value="6">Junho</option>
-                    <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
-                    <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
                 </select>
                 <label>Ano:</label><input type="number" id="gen-ano" value="2026">
-                <button class="btn-add" style="width:100%; margin-top:20px;" onclick="alert('O motor de cálculo Python será acionado via API Vercel.')">🚀 Iniciar Sorteio Inteligente</button>
+                <button class="btn-add" style="width:100%; margin-top:20px;">🚀 Iniciar Sorteio Inteligente</button>
             </div>
         </section>
     </main>
@@ -101,29 +91,25 @@
             <label>Nome do Setor:</label><input type="text" id="s-nome">
             <label>Sigla:</label><input type="text" id="s-sigla">
             <label><input type="checkbox" id="s-feriado"> Funciona em Feriados?</label>
-            
             <label>Dias de Funcionamento:</label>
-            <div id="s-dias-checks" class="grid-2col" style="margin-top:10px;"></div>
-            
+            <div id="s-dias-checks" class="grid-2col"></div>
             <div class="block-regra">
-                <strong>Vagas DIURNO:</strong>
+                <strong>Vagas Diurnas:</strong>
                 <div class="grid-2col">
-                    <label>Farmacêutico: <input type="number" id="s-farma-dia"></label>
-                    <label>Técnico: <input type="number" id="s-tec-dia"></label>
+                    <label>Farm: <input type="number" id="s-farma-dia"></label>
+                    <label>Téc: <input type="number" id="s-tec-dia"></label>
                 </div>
             </div>
-            
             <div class="block-regra">
-                <strong>Vagas NOTURNO:</strong>
+                <strong>Vagas Noturnas:</strong>
                 <div class="grid-2col">
-                    <label>Farmacêutico: <input type="number" id="s-farma-noite"></label>
-                    <label>Técnico: <input type="number" id="s-tec-noite"></label>
+                    <label>Farm: <input type="number" id="s-farma-noite"></label>
+                    <label>Téc: <input type="number" id="s-tec-noite"></label>
                 </div>
             </div>
-
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                <button type="button" onclick="fecharModais()" style="padding:10px; border:none; border-radius:5px;">Cancelar</button>
-                <button type="button" id="btn-save-setor" class="btn-add">Salvar Setor</button>
+                <button onclick="fecharModais()">Cancelar</button>
+                <button id="btn-save-setor" class="btn-add">Salvar Setor</button>
             </div>
         </div>
     </div>
@@ -137,10 +123,18 @@
             <select id="f-funcao">
                 <option>Técnico de Farmácia</option><option>Farmacêutico</option><option>Auxiliar</option>
             </select>
-            <label>Vínculo:</label><select id="f-vinculo-select"></select>
             
             <div class="block-regra">
-                <strong>Paridade de Dias:</strong>
+                <strong>Vínculos Empregatícios:</strong><br>
+                <small>Selecione todos os contratos que este profissional possui:</small>
+                <div id="f-vinculos-checks" class="grid-2col" style="margin-top:10px;"></div>
+            </div>
+            
+            <div class="block-regra">
+                <strong>Plantões Externos (Indisponibilidade Fixa):</strong><br>
+                <small>Selecione os dias da semana que o profissional está em outro hospital:</small>
+                <div id="f-restricoes-checks" class="grid-2col" style="margin-top:10px;"></div>
+                <label>Restrição de Paridade:</label>
                 <select id="f-paridade">
                     <option value="nenhuma">Pode trabalhar em qualquer dia</option>
                     <option value="pares">Somente dias PARES</option>
@@ -149,31 +143,22 @@
             </div>
 
             <div class="block-regra">
-                <strong>Folgas Fixas Semanais (Ex: Ter/Qui):</strong><br>
-                <div id="f-restricoes-checks" class="grid-2col" style="margin-top:10px;"></div>
-            </div>
-
-            <div class="block-regra">
-                <strong>Períodos de Afastamento:</strong>
-                <p><small>Adicione Férias, Licenças Médicas ou Folgas específicas.</small></p>
+                <strong>Férias, Licenças e Afastamentos:</strong>
                 <div id="lista-afastamentos"></div>
-                
                 <div style="background:#fff; padding:10px; border-radius:8px; border:1px solid #ddd; margin-top:10px;">
-                    <label style="margin-top:0;">Motivo:</label>
-                    <select id="afast-tipo">
-                        <option>Férias</option><option>Licença Médica</option><option>Folga Extra</option><option>Atestado</option>
-                    </select>
+                    <label style="margin-top:0;">Tipo:</label>
+                    <select id="afast-tipo"><option>Férias</option><option>Licença Médica</option><option>Folga Prêmio</option></select>
                     <div class="grid-2col">
                         <label>Início: <input type="date" id="afast-inicio"></label>
                         <label>Fim: <input type="date" id="afast-fim"></label>
                     </div>
-                    <button type="button" onclick="adicionarAfastamento()" class="btn-edit-outline" style="margin-top:10px;">+ Adicionar à lista</button>
+                    <button type="button" onclick="adicionarAfastamento()" class="btn-edit-outline">+ Adicionar Período</button>
                 </div>
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                <button type="button" onclick="fecharModais()" style="padding:10px; border:none; border-radius:5px;">Cancelar</button>
-                <button type="button" id="btn-save-func" class="btn-add">Salvar Funcionário</button>
+                <button onclick="fecharModais()">Cancelar</button>
+                <button id="btn-save-func" class="btn-add">Salvar Funcionário</button>
             </div>
         </div>
     </div>
@@ -184,14 +169,12 @@
             <input type="hidden" id="v-id">
             <label>Nome do Vínculo:</label><input type="text" id="v-nome">
             <div class="block-regra">
-                <strong>Carga Horária / Plantões:</strong>
-                <p><small>Defina as horas semanais e plantões mensais para cada cargo.</small></p>
-                <label>Farmacêutico: <input type="number" id="v-f-ch" placeholder="CH Semanal"> <input type="number" id="v-f-pb" placeholder="Plantões/Mês"></label>
-                <label>Técnico: <input type="number" id="v-t-ch" placeholder="CH Semanal"> <input type="number" id="v-t-pb" placeholder="Plantões/Mês"></label>
+                <label>Farmacêutico: <input type="number" id="v-f-ch" placeholder="CH"> <input type="number" id="v-f-pb" placeholder="Plantões"></label>
+                <label>Técnico: <input type="number" id="v-t-ch" placeholder="CH"> <input type="number" id="v-t-pb" placeholder="Plantões"></label>
             </div>
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                <button type="button" onclick="fecharModais()" style="padding:10px; border:none; border-radius:5px;">Cancelar</button>
-                <button type="button" id="btn-save-vinculo" class="btn-add">Salvar Vínculo</button>
+                <button onclick="fecharModais()">Cancelar</button>
+                <button id="btn-save-vinculo" class="btn-add">Salvar Vínculo</button>
             </div>
         </div>
     </div>
@@ -200,8 +183,8 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
         import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
-        // ⚠️ COLE AQUI AS SUAS CREDENCIAIS REAIS DO FIREBASE
-   const firebaseConfig = {
+        // ⚠️ COLOQUE SUAS CREDENCIAIS AQUI
+const firebaseConfig = {
   apiKey: "AIzaSyAbk6V15l78bL6oiHLrPxyP-esIdHRUgeY",
   authDomain: "gera-plantao.firebaseapp.com",
   projectId: "gera-plantao",
@@ -214,11 +197,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const diasSemana = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"];
-        
-        // Array temporário para gerenciar os afastamentos durante a edição
         let afastamentosTemp = [];
 
-        // NAVEGAÇÃO ENTRE TELAS
         window.showView = (v) => {
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -248,7 +228,6 @@
             document.getElementById('modal-setor').style.display='flex';
             document.getElementById('s-id').value = "NOVO";
             document.getElementById('s-dias-checks').innerHTML = diasSemana.map(d => `<label><input type="checkbox" class="s-dia" value="${d}"> ${d.toUpperCase()}</label>`).join("");
-            document.querySelectorAll('#modal-setor input[type="number"]').forEach(input => input.value = 0);
         };
 
         window.editarSetor = (id, data) => {
@@ -257,65 +236,16 @@
             document.getElementById('s-nome').value = data.nome;
             document.getElementById('s-sigla').value = data.sigla || id;
             document.getElementById('s-feriado').checked = data.funciona_feriado;
-            
-            const dia = data.necessidade_diurno || data.necessidade_por_turno || {};
+            const dia = data.necessidade_diurno || {};
             const noite = data.necessidade_noturno || {};
-
             document.getElementById('s-farma-dia').value = dia["Farmacêutico"] || 0;
             document.getElementById('s-tec-dia').value = dia["Técnico de Farmácia"] || 0;
             document.getElementById('s-farma-noite').value = noite["Farmacêutico"] || 0;
             document.getElementById('s-tec-noite').value = noite["Técnico de Farmácia"] || 0;
-            
-            document.querySelectorAll('.s-dia').forEach(ck => ck.checked = (data.dias_funcionamento && data.dias_funcionamento[ck.value]));
+            document.querySelectorAll('.s-dia').forEach(ck => ck.checked = data.dias_funcionamento[ck.value]);
         };
 
-        // --- LÓGICA: EQUIPE & AFASTAMENTOS ---
-        
-        window.renderAfastamentos = () => {
-            const container = document.getElementById('lista-afastamentos');
-            container.innerHTML = "";
-            if (afastamentosTemp.length === 0) {
-                container.innerHTML = "<p><small><em>Nenhum afastamento programado.</em></small></p>";
-                return;
-            }
-            afastamentosTemp.forEach((af, index) => {
-                // Converte a data de YYYY-MM-DD para DD/MM/YYYY
-                const inicioBr = af.inicio.split('-').reverse().join('/');
-                const fimBr = af.fim.split('-').reverse().join('/');
-                container.innerHTML += `
-                    <div class="item-afastamento">
-                        <div><strong>${af.tipo}</strong><br>${inicioBr} até ${fimBr}</div>
-                        <button type="button" class="btn-remover" onclick="removerAfastamento(${index})">X</button>
-                    </div>
-                `;
-            });
-        };
-
-        window.adicionarAfastamento = () => {
-            const tipo = document.getElementById('afast-tipo').value;
-            const inicio = document.getElementById('afast-inicio').value;
-            const fim = document.getElementById('afast-fim').value;
-            
-            if(!inicio || !fim) {
-                alert("Por favor, preencha a data de início e fim.");
-                return;
-            }
-            if(inicio > fim) {
-                alert("A data de início não pode ser maior que a do fim.");
-                return;
-            }
-
-            afastamentosTemp.push({ tipo, inicio, fim });
-            document.getElementById('afast-inicio').value = "";
-            document.getElementById('afast-fim').value = "";
-            renderAfastamentos();
-        };
-
-        window.removerAfastamento = (index) => {
-            afastamentosTemp.splice(index, 1);
-            renderAfastamentos();
-        };
-
+        // --- LÓGICA: EQUIPE ---
         window.carregarEquipe = async () => {
             const container = document.getElementById('lista-equipe');
             container.innerHTML = "Buscando...";
@@ -323,24 +253,24 @@
             container.innerHTML = "";
             snap.forEach(d => {
                 const c = d.data();
-                container.innerHTML += `<div class="card"><h3>${c.nome}</h3><p>${c.funcao} | <strong>${c.vinculo_slug || 'Sem Vínculo'}</strong></p><button class="btn-edit-outline" onclick='editarFunc("${d.id}", ${JSON.stringify(c)})'>Editar Restrições</button></div>`;
+                const vinculosExibicao = (c.vinculos_lista || []).map(v => `<span class="badge-vinculo">${v}</span>`).join("");
+                container.innerHTML += `<div class="card"><h3>${c.nome}</h3><p>${c.funcao}</p><div>${vinculosExibicao}</div><button class="btn-edit-outline" onclick='editarFunc("${d.id}", ${JSON.stringify(c)})'>Editar Restrições</button></div>`;
             });
         };
 
         window.abrirModalFunc = async () => {
             document.getElementById('modal-func').style.display='flex';
             document.getElementById('f-id').value = "NOVO";
-            document.getElementById('f-nome').value = "";
-            document.getElementById('f-paridade').value = "nenhuma";
             document.getElementById('f-restricoes-checks').innerHTML = diasSemana.map(d => `<label><input type="checkbox" class="f-dia" value="${d}"> ${d.toUpperCase()}</label>`).join("");
             
+            const vSnap = await getDocs(collection(db, "vinculos"));
+            const vContainer = document.getElementById('f-vinculos-checks');
+            vContainer.innerHTML = "";
+            vSnap.forEach(vDoc => {
+                vContainer.innerHTML += `<label><input type="checkbox" class="f-vinc-check" value="${vDoc.id}"> ${vDoc.data().nome}</label>`;
+            });
             afastamentosTemp = [];
             renderAfastamentos();
-            
-            const vSnap = await getDocs(collection(db, "vinculos"));
-            const select = document.getElementById('f-vinculo-select');
-            select.innerHTML = '<option value="">Selecione...</option>';
-            vSnap.forEach(vDoc => select.innerHTML += `<option value="${vDoc.id}">${vDoc.data().nome}</option>`);
         };
 
         window.editarFunc = async (id, data) => {
@@ -348,20 +278,21 @@
             document.getElementById('f-id').value = id;
             document.getElementById('f-nome').value = data.nome;
             document.getElementById('f-funcao').value = data.funcao;
-            document.getElementById('f-vinculo-select').value = data.vinculo_slug || "";
             document.getElementById('f-paridade').value = data.restricao_paridade || "nenhuma";
             document.querySelectorAll('.f-dia').forEach(ck => ck.checked = (data.restricoes_fixas || {})[ck.value]);
-            
-            // Carrega os afastamentos do banco para a variável temporária
+            document.querySelectorAll('.f-vinc-check').forEach(ck => ck.checked = (data.vinculos_lista || []).includes(ck.value));
             afastamentosTemp = data.afastamentos || [];
-            
-            // Retrocompatibilidade: Se a pessoa tinha datas_bloqueadas (modelo antigo), converte para afastamento de 1 dia
-            if(data.datas_bloqueadas && data.datas_bloqueadas.length > 0) {
-                data.datas_bloqueadas.forEach(dataString => {
-                    afastamentosTemp.push({ tipo: "Folga Extra", inicio: dataString, fim: dataString });
-                });
-            }
             renderAfastamentos();
+        };
+
+        window.adicionarAfastamento = () => {
+            afastamentosTemp.push({ tipo: document.getElementById('afast-tipo').value, inicio: document.getElementById('afast-inicio').value, fim: document.getElementById('afast-fim').value });
+            renderAfastamentos();
+        };
+
+        window.renderAfastamentos = () => {
+            const container = document.getElementById('lista-afastamentos');
+            container.innerHTML = afastamentosTemp.map((af, i) => `<div class="item-afastamento"><span>${af.tipo}: ${af.inicio} a ${af.fim}</span><button class="btn-remover" onclick="afastamentosTemp.splice(${i},1);renderAfastamentos();">X</button></div>`).join("");
         };
 
         // --- LÓGICA: VÍNCULOS ---
@@ -372,15 +303,13 @@
             container.innerHTML = "";
             snap.forEach(d => {
                 const v = d.data();
-                container.innerHTML += `<div class="card"><h3>${v.nome}</h3><p>Téc: ${v.regras["Técnico de Farmácia"]?.plantoes_base || 0} plantões</p><button class="btn-edit-outline" onclick='editarVinculo("${d.id}", ${JSON.stringify(v)})'>Editar Regras</button></div>`;
+                container.innerHTML += `<div class="card"><h3>${v.nome}</h3><button class="btn-edit-outline" onclick='editarVinculo("${d.id}", ${JSON.stringify(v)})'>Editar Regras</button></div>`;
             });
         };
 
         window.abrirModalVinculo = () => {
             document.getElementById('modal-vinculo').style.display='flex';
             document.getElementById('v-id').value = "NOVO";
-            document.getElementById('v-nome').value = "";
-            document.querySelectorAll('#modal-vinculo input[type="number"]').forEach(input => input.value = 0);
         };
 
         window.editarVinculo = (id, data) => {
@@ -393,42 +322,41 @@
             document.getElementById('v-t-pb').value = data.regras["Técnico de Farmácia"]?.plantoes_base || 0;
         };
 
-        // --- FUNÇÕES DE SALVAMENTO ---
-        document.getElementById('btn-save-setor').onclick = async () => {
-            const id = document.getElementById('s-id').value === "NOVO" ? document.getElementById('s-sigla').value : document.getElementById('s-id').value;
-            const dias = {}; document.querySelectorAll('.s-dia').forEach(ck => dias[ck.value] = ck.checked);
-            await setDoc(doc(db, "setores", id), {
-                nome: document.getElementById('s-nome').value,
-                sigla: document.getElementById('s-sigla').value,
-                funciona_feriado: document.getElementById('s-feriado').checked,
-                dias_funcionamento: dias,
-                necessidade_diurno: { "Farmacêutico": parseInt(document.getElementById('s-farma-dia').value), "Técnico de Farmácia": parseInt(document.getElementById('s-tec-dia').value) },
-                necessidade_noturno: { "Farmacêutico": parseInt(document.getElementById('s-farma-noite').value), "Técnico de Farmácia": parseInt(document.getElementById('s-tec-noite').value) }
-            }, { merge: true });
-            fecharModais(); carregarSetores();
-        };
-
+        // --- SALVAMENTO ---
         document.getElementById('btn-save-func').onclick = async () => {
-            const id = document.getElementById('f-id').value === "NOVO" ? null : document.getElementById('f-id').value;
-            const restricoes = {}; document.querySelectorAll('.f-dia').forEach(ck => restricoes[ck.value] = ck.checked);
+            const vinculosArr = [];
+            document.querySelectorAll('.f-vinc-check:checked').forEach(ck => vinculosArr.push(ck.value));
+            const restri = {};
+            document.querySelectorAll('.f-dia').forEach(ck => restri[ck.value] = ck.checked);
             
             const dados = {
                 nome: document.getElementById('f-nome').value,
                 funcao: document.getElementById('f-funcao').value,
-                vinculo_slug: document.getElementById('f-vinculo-select').value,
+                vinculos_lista: vinculosArr,
+                restricoes_fixas: restri,
                 restricao_paridade: document.getElementById('f-paridade').value,
-                restricoes_fixas: restricoes,
-                afastamentos: afastamentosTemp, // Salva a lista de férias/licenças
-                datas_bloqueadas: [], // Zerado, pois a nova lógica substitui esta
+                afastamentos: afastamentosTemp,
                 status_ativo: true
             };
-            if(id) await updateDoc(doc(db, "colaboradores", id), dados);
-            else await setDoc(doc(collection(db, "colaboradores")), dados);
+            const id = document.getElementById('f-id').value;
+            if(id === "NOVO") await setDoc(doc(collection(db, "colaboradores")), dados);
+            else await updateDoc(doc(db, "colaboradores", id), dados);
             fecharModais(); carregarEquipe();
         };
 
+        document.getElementById('btn-save-setor').onclick = async () => {
+            const dias = {}; document.querySelectorAll('.s-dia').forEach(ck => dias[ck.value] = ck.checked);
+            const dados = {
+                nome: document.getElementById('s-nome').value, sigla: document.getElementById('s-sigla').value, funciona_feriado: document.getElementById('s-feriado').checked, dias_funcionamento: dias,
+                necessidade_diurno: { "Farmacêutico": parseInt(document.getElementById('s-farma-dia').value), "Técnico de Farmácia": parseInt(document.getElementById('s-tec-dia').value) },
+                necessidade_noturno: { "Farmacêutico": parseInt(document.getElementById('s-farma-noite').value), "Técnico de Farmácia": parseInt(document.getElementById('s-tec-noite').value) }
+            };
+            await setDoc(doc(db, "setores", document.getElementById('s-sigla').value), dados);
+            fecharModais(); carregarSetores();
+        };
+
         document.getElementById('btn-save-vinculo').onclick = async () => {
-            const id = document.getElementById('v-id').value === "NOVO" ? document.getElementById('v-nome').value.toUpperCase().replace(/\s+/g, '_') : document.getElementById('v-id').value;
+            const id = document.getElementById('v-nome').value.toUpperCase().replace(/\s+/g, '_');
             await setDoc(doc(db, "vinculos", id), {
                 nome: document.getElementById('v-nome').value,
                 regras: {
@@ -439,7 +367,6 @@
             fecharModais(); carregarVinculos();
         };
 
-        // Inicialização
         carregarSetores();
     </script>
 </body>
