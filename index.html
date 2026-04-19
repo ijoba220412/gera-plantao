@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plantão Pro</title>
-    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0056b3">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,140 +11,26 @@
     <link rel="apple-touch-icon" href="icon-192.png">
 
     <style>
-        :root {
-            --primary: #0056b3;
-            --secondary: #6c757d;
-            --bg: #f8f9fa;
-            --white: #ffffff;
-            --text: #212529;
-            --shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            margin: 0;
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Sidebar Responsiva */
-        .sidebar {
-            width: 260px;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            transition: 0.3s;
-        }
-
-        .sidebar h2 {
-            font-size: 1.5rem;
-            margin-bottom: 2rem;
-            text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            padding-bottom: 1rem;
-        }
-
-        .nav-btn {
-            background: none;
-            border: none;
-            color: white;
-            text-align: left;
-            padding: 12px 15px;
-            font-size: 1rem;
-            cursor: pointer;
-            border-radius: 8px;
-            margin-bottom: 5px;
-            transition: 0.2s;
-        }
-
-        .nav-btn:hover, .nav-btn.active {
-            background: rgba(255,255,255,0.15);
-            font-weight: 600;
-        }
-
-        /* Área de Conteúdo */
-        .content {
-            flex: 1;
-            padding: 40px;
-            overflow-y: auto;
-        }
-
+        :root { --primary: #0056b3; --bg: #f8f9fa; --white: #ffffff; --shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        body { font-family: sans-serif; margin: 0; background: var(--bg); display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 250px; background: var(--primary); color: white; padding: 20px; display: flex; flex-direction: column; }
+        .nav-btn { background: none; border: none; color: white; padding: 15px; text-align: left; cursor: pointer; border-radius: 8px; margin-bottom: 5px; }
+        .nav-btn.active { background: rgba(255,255,255,0.2); font-weight: bold; }
+        .content { flex: 1; padding: 30px; overflow-y: auto; }
         .view-section { display: none; }
         .view-section.active { display: block; }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        /* Cards e Grid */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
-            background: var(--white);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-            border-top: 5px solid var(--primary);
-        }
-
-        .card h3 { margin-top: 0; color: var(--primary); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: var(--white); padding: 20px; border-radius: 12px; box-shadow: var(--shadow); border-top: 5px solid var(--primary); position: relative; }
+        .badge { background: #e9ecef; padding: 4px 8px; border-radius: 10px; font-size: 11px; margin: 2px; display: inline-block; font-weight: bold; }
+        .btn-action { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
         
-        .badge {
-            display: inline-block;
-            background: #e9ecef;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            margin: 2px;
-            font-weight: bold;
-        }
-
-        .btn-action {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        /* Estilo para Tabela de Colaboradores */
-        table {
-            width: 100%;
-            background: var(--white);
-            border-collapse: collapse;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: var(--shadow);
-        }
-
-        th, td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-
-        th { background: #f1f3f5; color: var(--secondary); text-transform: uppercase; font-size: 0.8rem; }
-
-        @media (max-width: 768px) {
-            body { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; flex-direction: row; justify-content: space-around; padding: 10px; }
-            .sidebar h2 { display: none; }
-            .content { padding: 20px; }
-        }
+        /* Modal Style */
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .grid-checks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+        
+        @media (max-width: 768px) { body { flex-direction: column; } .sidebar { width: 100%; height: auto; flex-direction: row; } .sidebar h2 { display: none; } }
     </style>
 </head>
 <body>
@@ -159,50 +44,61 @@
 
     <main class="content">
         <section id="view-setores" class="view-section active">
-            <div class="header">
-                <h1>Setores e Regras</h1>
-                <button class="btn-action">+ Configurar Setor</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h1>Setores</h1>
             </div>
-            <div id="lista-setores" class="grid"></div>
+            <div id="lista-setores" class="grid">Carregando setores...</div>
         </section>
 
         <section id="view-colaboradores" class="view-section">
-            <div class="header">
-                <h1>Corpo Técnico</h1>
-                <button class="btn-action">+ Novo Funcionário</button>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Função</th>
-                        <th>Vínculos</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela-equipe"></tbody>
-            </table>
+            <h1>Corpo Técnico</h1>
+            <div id="lista-equipe" class="grid">Carregando equipe...</div>
         </section>
 
         <section id="view-escala" class="view-section">
-            <div class="header">
-                <h1>Gerador de Plantão</h1>
-            </div>
-            <div class="card" style="max-width: 500px;">
-                <p>Selecione o mês para aplicar as regras automáticas de sorteio.</p>
-                <select id="mes-escala" style="width: 100%; padding: 10px; margin-bottom: 20px;">
-                    <option value="4-2026">Abril de 2026</option>
-                    <option value="5-2026">Maio de 2026</option>
+            <h1>Gerador de Plantão</h1>
+            <div class="card" style="max-width: 400px;">
+                <p>Selecione o mês para aplicar as regras.</p>
+                <select id="mes-escala" style="width:100%; padding:10px; margin-bottom:20px;">
+                    <option>Abril de 2026</option>
                 </select>
-                <button class="btn-action" style="width: 100%;" onclick="alert('Iniciando processamento das regras...')">Gerar Escala Aleatória</button>
+                <button class="btn-action" style="width:100%">Gerar Escala Aleatória</button>
             </div>
         </section>
     </main>
 
+    <div id="modal-setor" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-titulo">Editar Setor</h2>
+            <input type="hidden" id="edit-id">
+            
+            <label>Nome do Setor:</label>
+            <input type="text" id="edit-nome">
+
+            <label><input type="checkbox" id="edit-feriado"> Funciona em Feriados?</label>
+
+            <div style="margin-top:20px;"><strong>Dias de Funcionamento:</strong></div>
+            <div id="check-dias" class="grid-checks"></div>
+
+            <div style="margin-top:20px;"><strong>Vagas por Turno:</strong></div>
+            <div style="display:flex; gap:10px;">
+                <label>Farm: <input type="number" id="v-farma"></label>
+                <label>Téc: <input type="number" id="v-tec"></label>
+                <label>Aux: <input type="number" id="v-aux"></label>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:30px;">
+                <button onclick="fecharModal()" style="padding:10px; background:#ccc; border:none; border-radius:5px;">Cancelar</button>
+                <button id="btn-salvar-setor" class="btn-action">Salvar no Firebase</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
+        // CONFIGURAÇÃO DO FIREBASE (COLE A SUA AQUI)
         const firebaseConfig = {
   apiKey: "AIzaSyAbk6V15l78bL6oiHLrPxyP-esIdHRUgeY",
   authDomain: "gera-plantao.firebaseapp.com",
@@ -216,70 +112,103 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Navegação entre vistas
-        window.showView = (viewId) => {
+        const diasSemana = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"];
+
+        // Troca de Telas
+        window.showView = (view) => {
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`view-${viewId}`).classList.add('active');
+            document.getElementById(`view-${view}`).classList.add('active');
             event.target.classList.add('active');
-            
-            if(viewId === 'setores') carregarSetores();
-            if(viewId === 'colaboradores') carregarEquipe();
+            if(view === 'setores') carregarSetores();
+            if(view === 'colaboradores') carregarEquipe();
         }
 
-        // Carregar Setores do Firestore
+        // Listar Setores
         async function carregarSetores() {
             const container = document.getElementById("lista-setores");
-            container.innerHTML = "Carregando...";
+            container.innerHTML = "Buscando...";
             const snapshot = await getDocs(collection(db, "setores"));
             container.innerHTML = "";
-            
-            snapshot.forEach(doc => {
-                const s = doc.data();
-                const dias = Object.entries(s.dias_funcionamento || {})
-                    .filter(([d, ativo]) => ativo)
-                    .map(([d]) => `<span class="badge">${d.toUpperCase()}</span>`).join("");
+            snapshot.forEach(res => {
+                const s = res.data();
+                const id = res.id;
+                const badges = Object.entries(s.dias_funcionamento || {}).filter(([d, a]) => a).map(([d]) => `<span class="badge">${d.toUpperCase()}</span>`).join("");
                 
-                container.innerHTML += `
-                    <div class="card">
-                        <h3>${s.nome} (${s.sigla})</h3>
-                        <p><strong>Necessidade:</strong><br>
-                        ${s.necessidade_por_turno["Farmacêutico"] || 0} Farm. | 
-                        ${s.necessidade_por_turno["Técnico de Farmácia"] || 0} Técnicos</p>
-                        <div>${dias}</div>
-                    </div>
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h3>${s.nome} (${s.sigla})</h3>
+                    <p>Feriados: ${s.funciona_feriado ? '✅ Sim' : '❌ Não'}</p>
+                    <p><strong>Vagas:</strong> ${s.necessidade_por_turno["Farmacêutico"]||0}F | ${s.necessidade_por_turno["Técnico de Farmácia"]||0}T</p>
+                    <div>${badges}</div>
+                    <button id="btn-edit-${id}" class="btn-action" style="width:100%; margin-top:15px; background:none; border:1px solid var(--primary); color:var(--primary)">Editar Regras</button>
                 `;
+                container.appendChild(card);
+                document.getElementById(`btn-edit-${id}`).onclick = () => abrirEdicaoSetor(id, s);
             });
         }
 
-        // Carregar Equipe do Firestore
-        async function carregarEquipe() {
-            const tabela = document.getElementById("tabela-equipe");
-            tabela.innerHTML = "<tr><td colspan='4'>Buscando...</td></tr>";
-            const q = query(collection(db, "colaboradores"), orderBy("funcao"), orderBy("nome"));
-            const snapshot = await getDocs(q);
-            tabela.innerHTML = "";
+        // Modal de Edição
+        window.abrirEdicaoSetor = (id, dados) => {
+            document.getElementById('modal-setor').style.display = 'flex';
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-nome').value = dados.nome;
+            document.getElementById('edit-feriado').checked = dados.funciona_feriado || false;
+            document.getElementById('v-farma').value = dados.necessidade_por_turno["Farmacêutico"] || 0;
+            document.getElementById('v-tec').value = dados.necessidade_por_turno["Técnico de Farmácia"] || 0;
+            document.getElementById('v-aux').value = dados.necessidade_por_turno["Auxiliar"] || 0;
+
+            const checkContainer = document.getElementById('check-dias');
+            checkContainer.innerHTML = '';
+            diasSemana.forEach(dia => {
+                const checked = (dados.dias_funcionamento && dados.dias_funcionamento[dia]) ? 'checked' : '';
+                checkContainer.innerHTML += `<label><input type="checkbox" class="chk-dia" value="${dia}" ${checked}> ${dia.toUpperCase()}</label>`;
+            });
+        };
+
+        window.fecharModal = () => document.getElementById('modal-setor').style.display = 'none';
+
+        // Salvar no Firebase
+        document.getElementById('btn-salvar-setor').onclick = async () => {
+            const id = document.getElementById('edit-id').value;
+            const btn = document.getElementById('btn-salvar-setor');
+            btn.innerText = "Salvando...";
             
-            snapshot.forEach(doc => {
-                const c = doc.data();
-                tabela.innerHTML += `
-                    <tr>
-                        <td><strong>${c.nome}</strong></td>
-                        <td>${c.funcao}</td>
-                        <td>${c.vinculos.length > 0 ? c.vinculos.join(", ") : "<em>Não definido</em>"}</td>
-                        <td><span style="color: ${c.status_ativo ? 'green' : 'red'}">● ${c.status_ativo ? 'Ativo' : 'Inativo'}</span></td>
-                    </tr>
-                `;
+            const diasObj = {};
+            document.querySelectorAll('.chk-dia').forEach(c => diasObj[c.value] = c.checked);
+
+            const atualizacao = {
+                nome: document.getElementById('edit-nome').value,
+                funciona_feriado: document.getElementById('edit-feriado').checked,
+                dias_funcionamento: diasObj,
+                necessidade_por_turno: {
+                    "Farmacêutico": parseInt(document.getElementById('v-farma').value),
+                    "Técnico de Farmácia": parseInt(document.getElementById('v-tec').value),
+                    "Auxiliar": parseInt(document.getElementById('v-aux').value)
+                }
+            };
+
+            await updateDoc(doc(db, "setores", id), atualizacao);
+            fecharModal();
+            carregarSetores();
+            btn.innerText = "Salvar no Firebase";
+        };
+
+        async function carregarEquipe() {
+            const container = document.getElementById("lista-equipe");
+            container.innerHTML = "Buscando...";
+            const q = query(collection(db, "colaboradores"), orderBy("nome"));
+            const snapshot = await getDocs(q);
+            container.innerHTML = "";
+            snapshot.forEach(res => {
+                const c = res.data();
+                container.innerHTML += `<div class="card"><h3>${c.nome}</h3><p>${c.funcao}</p></div>`;
             });
         }
 
-        // Inicialização
         carregarSetores();
-
-        // Registo do Service Worker para PWA
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').catch(err => console.log("SW Erro:", err));
-        }
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
     </script>
 </body>
 </html>
