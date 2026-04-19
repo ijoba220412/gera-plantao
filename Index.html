@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plantão Pro</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0056b3">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <style>
+        :root {
+            --primary: #0056b3;
+            --secondary: #6c757d;
+            --bg: #f8f9fa;
+            --white: #ffffff;
+            --text: #212529;
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Responsiva */
+        .sidebar {
+            width: 260px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            transition: 0.3s;
+        }
+
+        .sidebar h2 {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 1rem;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: white;
+            text-align: left;
+            padding: 12px 15px;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: 0.2s;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: rgba(255,255,255,0.15);
+            font-weight: 600;
+        }
+
+        /* Área de Conteúdo */
+        .content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        /* Cards e Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border-top: 5px solid var(--primary);
+        }
+
+        .card h3 { margin-top: 0; color: var(--primary); }
+        
+        .badge {
+            display: inline-block;
+            background: #e9ecef;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            margin: 2px;
+            font-weight: bold;
+        }
+
+        .btn-action {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Estilo para Tabela de Colaboradores */
+        table {
+            width: 100%;
+            background: var(--white);
+            border-collapse: collapse;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th { background: #f1f3f5; color: var(--secondary); text-transform: uppercase; font-size: 0.8rem; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; flex-direction: row; justify-content: space-around; padding: 10px; }
+            .sidebar h2 { display: none; }
+            .content { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <h2>Plantão Pro</h2>
+        <button class="nav-btn active" onclick="showView('setores')">📍 Setores</button>
+        <button class="nav-btn" onclick="showView('colaboradores')">👥 Equipe</button>
+        <button class="nav-btn" onclick="showView('escala')">📅 Gerar Escala</button>
+    </nav>
+
+    <main class="content">
+        <section id="view-setores" class="view-section active">
+            <div class="header">
+                <h1>Setores e Regras</h1>
+                <button class="btn-action">+ Configurar Setor</button>
+            </div>
+            <div id="lista-setores" class="grid"></div>
+        </section>
+
+        <section id="view-colaboradores" class="view-section">
+            <div class="header">
+                <h1>Corpo Técnico</h1>
+                <button class="btn-action">+ Novo Funcionário</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Função</th>
+                        <th>Vínculos</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-equipe"></tbody>
+            </table>
+        </section>
+
+        <section id="view-escala" class="view-section">
+            <div class="header">
+                <h1>Gerador de Plantão</h1>
+            </div>
+            <div class="card" style="max-width: 500px;">
+                <p>Selecione o mês para aplicar as regras automáticas de sorteio.</p>
+                <select id="mes-escala" style="width: 100%; padding: 10px; margin-bottom: 20px;">
+                    <option value="4-2026">Abril de 2026</option>
+                    <option value="5-2026">Maio de 2026</option>
+                </select>
+                <button class="btn-action" style="width: 100%;" onclick="alert('Iniciando processamento das regras...')">Gerar Escala Aleatória</button>
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY",
+            authDomain: "SEU_PROJETO.firebaseapp.com",
+            projectId: "SEU_PROJETO",
+            storageBucket: "SEU_PROJETO.appspot.com",
+            messagingSenderId: "SEU_ID",
+            appId: "SEU_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Navegação entre vistas
+        window.showView = (viewId) => {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`view-${viewId}`).classList.add('active');
+            event.target.classList.add('active');
+            
+            if(viewId === 'setores') carregarSetores();
+            if(viewId === 'colaboradores') carregarEquipe();
+        }
+
+        // Carregar Setores do Firestore
+        async function carregarSetores() {
+            const container = document.getElementById("lista-setores");
+            container.innerHTML = "Carregando...";
+            const snapshot = await getDocs(collection(db, "setores"));
+            container.innerHTML = "";
+            
+            snapshot.forEach(doc => {
+                const s = doc.data();
+                const dias = Object.entries(s.dias_funcionamento || {})
+                    .filter(([d, ativo]) => ativo)
+                    .map(([d]) => `<span class="badge">${d.toUpperCase()}</span>`).join("");
+                
+                container.innerHTML += `
+                    <div class="card">
+                        <h3>${s.nome} (${s.sigla})</h3>
+                        <p><strong>Necessidade:</strong><br>
+                        ${s.necessidade_por_turno["Farmacêutico"] || 0} Farm. | 
+                        ${s.necessidade_por_turno["Técnico de Farmácia"] || 0} Técnicos</p>
+                        <div>${dias}</div>
+                    </div>
+                `;
+            });
+        }
+
+        // Carregar Equipe do Firestore
+        async function carregarEquipe() {
+            const tabela = document.getElementById("tabela-equipe");
+            tabela.innerHTML = "<tr><td colspan='4'>Buscando...</td></tr>";
+            const q = query(collection(db, "colaboradores"), orderBy("funcao"), orderBy("nome"));
+            const snapshot = await getDocs(q);
+            tabela.innerHTML = "";
+            
+            snapshot.forEach(doc => {
+                const c = doc.data();
+                tabela.innerHTML += `
+                    <tr>
+                        <td><strong>${c.nome}</strong></td>
+                        <td>${c.funcao}</td>
+                        <td>${c.vinculos.length > 0 ? c.vinculos.join(", ") : "<em>Não definido</em>"}</td>
+                        <td><span style="color: ${c.status_ativo ? 'green' : 'red'}">● ${c.status_ativo ? 'Ativo' : 'Inativo'}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Inicialização
+        carregarSetores();
+
+        // Registo do Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(err => console.log("SW Erro:", err));
+        }
+    </script>
+</body>
+</html>
