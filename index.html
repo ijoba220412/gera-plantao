@@ -3,102 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plantão Pro</title>
+    <title>Plantão Pro - V2</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0056b3">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="icon-192.png">
-
     <style>
-        :root { --primary: #0056b3; --bg: #f8f9fa; --white: #ffffff; --shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        body { font-family: sans-serif; margin: 0; background: var(--bg); display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 250px; background: var(--primary); color: white; padding: 20px; display: flex; flex-direction: column; }
-        .nav-btn { background: none; border: none; color: white; padding: 15px; text-align: left; cursor: pointer; border-radius: 8px; margin-bottom: 5px; }
+        :root { --primary: #0056b3; --bg: #f0f2f5; --white: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); display: flex; height: 100vh; }
+        
+        /* Menu Lateral */
+        .sidebar { width: 220px; background: var(--primary); color: white; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .nav-btn { background: none; border: none; color: white; padding: 12px; text-align: left; cursor: pointer; border-radius: 8px; transition: 0.2s; }
         .nav-btn.active { background: rgba(255,255,255,0.2); font-weight: bold; }
+        
+        /* Conteúdo */
         .content { flex: 1; padding: 30px; overflow-y: auto; }
         .view-section { display: none; }
         .view-section.active { display: block; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .card { background: var(--white); padding: 20px; border-radius: 12px; box-shadow: var(--shadow); border-top: 5px solid var(--primary); position: relative; }
-        .badge { background: #e9ecef; padding: 4px 8px; border-radius: 10px; font-size: 11px; margin: 2px; display: inline-block; font-weight: bold; }
-        .btn-action { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
         
-        /* Modal Style */
+        /* Componentes */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid var(--primary); }
+        .btn-add { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        
+        /* Modais */
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
-        input[type="text"], input[type="number"] { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .grid-checks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 550px; max-height: 85vh; overflow-y: auto; }
+        input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
         
-        @media (max-width: 768px) { body { flex-direction: column; } .sidebar { width: 100%; height: auto; flex-direction: row; } .sidebar h2 { display: none; } }
+        @media (max-width: 768px) { body { flex-direction: column; } .sidebar { width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; } }
     </style>
 </head>
 <body>
 
     <nav class="sidebar">
-        <h2>Plantão Pro</h2>
+        <h2 style="margin-bottom:20px; text-align:center;">Plantão Pro</h2>
         <button class="nav-btn active" onclick="showView('setores')">📍 Setores</button>
-        <button class="nav-btn" onclick="showView('colaboradores')">👥 Equipe</button>
+        <button class="nav-btn" onclick="showView('equipe')">👥 Equipe</button>
+        <button class="nav-btn" onclick="showView('vinculos')">🔗 Vínculos</button>
         <button class="nav-btn" onclick="showView('escala')">📅 Gerar Escala</button>
     </nav>
 
     <main class="content">
         <section id="view-setores" class="view-section active">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h1>Setores</h1>
-            </div>
-            <div id="lista-setores" class="grid">Carregando setores...</div>
+            <div class="header"><h1>Setores</h1><button class="btn-add" onclick="abrirNovoSetor()">+ Novo Setor</button></div>
+            <div id="lista-setores" class="grid"></div>
         </section>
 
-        <section id="view-colaboradores" class="view-section">
-            <h1>Corpo Técnico</h1>
-            <div id="lista-equipe" class="grid">Carregando equipe...</div>
+        <section id="view-equipe" class="view-section">
+            <div class="header"><h1>Corpo Técnico</h1><button class="btn-add" onclick="abrirNovoFuncionario()">+ Novo Funcionário</button></div>
+            <div id="lista-equipe" class="grid"></div>
+        </section>
+
+        <section id="view-vinculos" class="view-section">
+            <div class="header"><h1>Vínculos e Regras</h1><button class="btn-add" onclick="abrirNovoVinculo()">+ Novo Vínculo</button></div>
+            <div id="lista-vinculos" class="grid"></div>
         </section>
 
         <section id="view-escala" class="view-section">
-            <h1>Gerador de Plantão</h1>
-            <div class="card" style="max-width: 400px;">
-                <p>Selecione o mês para aplicar as regras.</p>
-                <select id="mes-escala" style="width:100%; padding:10px; margin-bottom:20px;">
-                    <option>Abril de 2026</option>
+            <div class="header"><h1>Gerador de Escala</h1></div>
+            <div class="card" style="max-width: 450px;">
+                <label>Mês:</label>
+                <select id="gen-mes">
+                    <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+                    <option value="4" selected>Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+                    <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+                    <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
                 </select>
-                <button class="btn-action" style="width:100%">Gerar Escala Aleatória</button>
+                <label>Ano:</label>
+                <input type="number" id="gen-ano" value="2026">
+                <button class="btn-add" style="width:100%; margin-top:20px;" onclick="iniciarGerador()">🚀 Processar Escala Inteligente</button>
             </div>
         </section>
     </main>
 
-    <div id="modal-setor" class="modal">
+    <div id="modal-func" class="modal">
         <div class="modal-content">
-            <h2 id="modal-titulo">Editar Setor</h2>
-            <input type="hidden" id="edit-id">
-            
-            <label>Nome do Setor:</label>
-            <input type="text" id="edit-nome">
+            <h2 id="tit-func">Funcionário</h2>
+            <input type="hidden" id="f-id">
+            <label>Nome:</label><input type="text" id="f-nome">
+            <label>Função:</label>
+            <select id="f-funcao">
+                <option>Técnico de Farmácia</option>
+                <option>Farmacêutico</option>
+                <option>Auxiliar</option>
+            </select>
+            <label>Vínculo Principal:</label>
+            <select id="f-vinculo-lista"></select>
 
-            <label><input type="checkbox" id="edit-feriado"> Funciona em Feriados?</label>
-
-            <div style="margin-top:20px;"><strong>Dias de Funcionamento:</strong></div>
-            <div id="check-dias" class="grid-checks"></div>
-
-            <div style="margin-top:20px;"><strong>Vagas por Turno:</strong></div>
-            <div style="display:flex; gap:10px;">
-                <label>Farm: <input type="number" id="v-farma"></label>
-                <label>Téc: <input type="number" id="v-tec"></label>
-                <label>Aux: <input type="number" id="v-aux"></label>
+            <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-top:15px;">
+                <strong>Restrições (Caso Renata):</strong><br>
+                <small>Dias fixos que NÃO pode trabalhar:</small>
+                <div id="f-restricoes-fixas" style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:10px;"></div>
             </div>
 
-            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:30px;">
-                <button onclick="fecharModal()" style="padding:10px; background:#ccc; border:none; border-radius:5px;">Cancelar</button>
-                <button id="btn-salvar-setor" class="btn-action">Salvar no Firebase</button>
+            <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-top:15px;">
+                <strong>Indisponibilidade (Caso Allan):</strong><br>
+                <small>Datas específicas (separadas por vírgula):</small>
+                <input type="text" id="f-datas-bloqueio" placeholder="Ex: 2026-05-02, 2026-05-15">
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                <button onclick="fecharModais()" style="padding:10px;">Cancelar</button>
+                <button id="btn-save-func" class="btn-add">Salvar Funcionário</button>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
-        // CONFIGURAÇÃO DO FIREBASE (COLE A SUA AQUI)
         const firebaseConfig = {
   apiKey: "AIzaSyAbk6V15l78bL6oiHLrPxyP-esIdHRUgeY",
   authDomain: "gera-plantao.firebaseapp.com",
@@ -112,103 +126,55 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const diasSemana = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"];
-
-        // Troca de Telas
-        window.showView = (view) => {
+        // NAVEGAÇÃO
+        window.showView = (v) => {
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`view-${view}`).classList.add('active');
+            document.getElementById(`view-${v}`).classList.add('active');
             event.target.classList.add('active');
-            if(view === 'setores') carregarSetores();
-            if(view === 'colaboradores') carregarEquipe();
-        }
-
-        // Listar Setores
-        async function carregarSetores() {
-            const container = document.getElementById("lista-setores");
-            container.innerHTML = "Buscando...";
-            const snapshot = await getDocs(collection(db, "setores"));
-            container.innerHTML = "";
-            snapshot.forEach(res => {
-                const s = res.data();
-                const id = res.id;
-                const badges = Object.entries(s.dias_funcionamento || {}).filter(([d, a]) => a).map(([d]) => `<span class="badge">${d.toUpperCase()}</span>`).join("");
-                
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <h3>${s.nome} (${s.sigla})</h3>
-                    <p>Feriados: ${s.funciona_feriado ? '✅ Sim' : '❌ Não'}</p>
-                    <p><strong>Vagas:</strong> ${s.necessidade_por_turno["Farmacêutico"]||0}F | ${s.necessidade_por_turno["Técnico de Farmácia"]||0}T</p>
-                    <div>${badges}</div>
-                    <button id="btn-edit-${id}" class="btn-action" style="width:100%; margin-top:15px; background:none; border:1px solid var(--primary); color:var(--primary)">Editar Regras</button>
-                `;
-                container.appendChild(card);
-                document.getElementById(`btn-edit-${id}`).onclick = () => abrirEdicaoSetor(id, s);
-            });
-        }
-
-        // Modal de Edição
-        window.abrirEdicaoSetor = (id, dados) => {
-            document.getElementById('modal-setor').style.display = 'flex';
-            document.getElementById('edit-id').value = id;
-            document.getElementById('edit-nome').value = dados.nome;
-            document.getElementById('edit-feriado').checked = dados.funciona_feriado || false;
-            document.getElementById('v-farma').value = dados.necessidade_por_turno["Farmacêutico"] || 0;
-            document.getElementById('v-tec').value = dados.necessidade_por_turno["Técnico de Farmácia"] || 0;
-            document.getElementById('v-aux').value = dados.necessidade_por_turno["Auxiliar"] || 0;
-
-            const checkContainer = document.getElementById('check-dias');
-            checkContainer.innerHTML = '';
-            diasSemana.forEach(dia => {
-                const checked = (dados.dias_funcionamento && dados.dias_funcionamento[dia]) ? 'checked' : '';
-                checkContainer.innerHTML += `<label><input type="checkbox" class="chk-dia" value="${dia}" ${checked}> ${dia.toUpperCase()}</label>`;
-            });
+            if(v === 'setores') carregarSetores();
+            if(v === 'equipe') carregarEquipe();
+            if(v === 'vinculos') carregarVinculos();
         };
 
-        window.fecharModal = () => document.getElementById('modal-setor').style.display = 'none';
-
-        // Salvar no Firebase
-        document.getElementById('btn-salvar-setor').onclick = async () => {
-            const id = document.getElementById('edit-id').value;
-            const btn = document.getElementById('btn-salvar-setor');
-            btn.innerText = "Salvando...";
-            
-            const diasObj = {};
-            document.querySelectorAll('.chk-dia').forEach(c => diasObj[c.value] = c.checked);
-
-            const atualizacao = {
-                nome: document.getElementById('edit-nome').value,
-                funciona_feriado: document.getElementById('edit-feriado').checked,
-                dias_funcionamento: diasObj,
-                necessidade_por_turno: {
-                    "Farmacêutico": parseInt(document.getElementById('v-farma').value),
-                    "Técnico de Farmácia": parseInt(document.getElementById('v-tec').value),
-                    "Auxiliar": parseInt(document.getElementById('v-aux').value)
-                }
-            };
-
-            await updateDoc(doc(db, "setores", id), atualizacao);
-            fecharModal();
-            carregarSetores();
-            btn.innerText = "Salvar no Firebase";
-        };
-
+        // CARREGAR EQUIPE
         async function carregarEquipe() {
-            const container = document.getElementById("lista-equipe");
-            container.innerHTML = "Buscando...";
-            const q = query(collection(db, "colaboradores"), orderBy("nome"));
-            const snapshot = await getDocs(q);
+            const container = document.getElementById('lista-equipe');
+            container.innerHTML = "Carregando...";
+            const snap = await getDocs(query(collection(db, "colaboradores"), orderBy("nome")));
             container.innerHTML = "";
-            snapshot.forEach(res => {
-                const c = res.data();
-                container.innerHTML += `<div class="card"><h3>${c.nome}</h3><p>${c.funcao}</p></div>`;
+            snap.forEach(d => {
+                const c = d.data();
+                container.innerHTML += `
+                    <div class="card">
+                        <h3>${c.nome}</h3>
+                        <p><strong>${c.funcao}</strong> | ${c.vinculo_slug || 'Sem Vínculo'}</p>
+                        <button onclick='editarFunc("${d.id}", ${JSON.stringify(c)})' style="width:100%; cursor:pointer;">Editar Regras</button>
+                    </div>`;
             });
         }
 
+        // EDITAR FUNCIONÁRIO (Allan e Renata)
+        window.editarFunc = (id, data) => {
+            document.getElementById('modal-func').style.display = 'flex';
+            document.getElementById('f-id').value = id;
+            document.getElementById('f-nome').value = data.nome;
+            document.getElementById('f-funcao').value = data.funcao;
+            document.getElementById('f-datas-bloqueio').value = (data.datas_bloqueadas || []).join(", ");
+            
+            const dias = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"];
+            const resContainer = document.getElementById('f-restricoes-fixas');
+            resContainer.innerHTML = "";
+            dias.forEach(dia => {
+                const checked = (data.restricoes_fixas || {})[dia] ? 'checked' : '';
+                resContainer.innerHTML += `<label><input type="checkbox" class="chk-res" value="${dia}" ${checked}> ${dia.toUpperCase()}</label>`;
+            });
+        };
+
+        window.fecharModais = () => document.querySelectorAll('.modal').forEach(m => m.display='none');
+
+        // INICIALIZAÇÃO
         carregarSetores();
-        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
     </script>
 </body>
 </html>
