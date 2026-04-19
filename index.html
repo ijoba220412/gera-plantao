@@ -74,13 +74,49 @@
             <div id="lista-vinculos" class="grid">Carregando vínculos...</div>
         </section>
 
-        <section id="view-escala" class="view-section">
-            <div class="header"><h1>Gerador de Escala</h1></div>
-            <div class="card" style="max-width: 450px;">
-                <label>Mês:</label>
-                <select id="gen-mes">
-                    <option value="4" selected>Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+                <section id="view-escala" class="view-section">
+            <div class="header">
+                <h1>Gerador e Escala Móvel</h1>
+                <div>
+                    <button class="btn-edit-outline" onclick="window.print()" style="margin-top:0; border-color:#333; color:#333;">🖨️ PDF / Imprimir</button>
+                    <button class="btn-add" onclick="exportarExcel()" style="background:#28a745; margin-left:10px;">📊 Baixar XLSX</button>
+                </div>
+            </div>
+            
+            <div class="card" id="painel-sorteio" style="margin-bottom:20px; border-top-color:#17a2b8;">
+                <div class="grid-2col" style="align-items:end;">
+                    <div>
+                        <label>Mês:</label>
+                        <select id="gen-mes">
+                            <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+                            <option value="4" selected>Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+                            <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+                            <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Ano:</label>
+                        <input type="number" id="gen-ano" value="2026">
+                    </div>
+                </div>
+                <button class="btn-add" style="width:100%; margin-top:15px; background:#17a2b8;" onclick="iniciarSorteio()">🚀 Gerar Escala Inteligente</button>
+            </div>
+
+            <div id="filtros-escala" style="display:none; margin-bottom:15px; gap:10px;">
+                <label style="display:inline-block; margin-top:0;">Filtro de Visão:</label>
+                <select id="filtro-funcao" style="width:250px; display:inline-block;" onchange="aplicarFiltroTabela()">
+                    <option value="TODOS">Todas as Funções Juntas</option>
+                    <option value="Farmacêutico">Apenas Farmacêuticos</option>
+                    <option value="Técnico de Farmácia">Apenas Técnicos</option>
+                    <option value="Auxiliar">Apenas Auxiliares</option>
                 </select>
+            </div>
+
+            <div id="tabela-container" style="background:#fff; border-radius:12px; box-shadow:0 4px 6px rgba(0,0,0,0.05); overflow-x:auto;">
+                <p style="padding:30px; text-align:center; color:#666;">A escala será exibida aqui após o processamento.</p>
+            </div>
+        </section>
+
                 <label>Ano:</label><input type="number" id="gen-ano" value="2026">
                 <button class="btn-add" style="width:100%; margin-top:20px;">🚀 Iniciar Sorteio Inteligente</button>
             </div>
