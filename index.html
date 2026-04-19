@@ -98,6 +98,7 @@
                 <div class="grid-2col">
                     <label>Farm: <input type="number" id="s-farma-dia"></label>
                     <label>Téc: <input type="number" id="s-tec-dia"></label>
+                    <label>Aux: <input type="number" id="s-aux-dia"></label>
                 </div>
             </div>
             <div class="block-regra">
@@ -105,11 +106,12 @@
                 <div class="grid-2col">
                     <label>Farm: <input type="number" id="s-farma-noite"></label>
                     <label>Téc: <input type="number" id="s-tec-noite"></label>
+                    <label>Aux: <input type="number" id="s-aux-noite"></label>
                 </div>
             </div>
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                <button onclick="fecharModais()">Cancelar</button>
-                <button id="btn-save-setor" class="btn-add">Salvar Setor</button>
+                <button type="button" onclick="fecharModais()" style="padding:10px; border:none; border-radius:5px;">Cancelar</button>
+                <button type="button" id="btn-save-setor" class="btn-add">Salvar Setor</button>
             </div>
         </div>
     </div>
@@ -129,16 +131,25 @@
                 <small>Selecione todos os contratos que este profissional possui:</small>
                 <div id="f-vinculos-checks" class="grid-2col" style="margin-top:10px;"></div>
             </div>
+
+            <div class="block-regra">
+                <strong>Regime de Escala:</strong>
+                <select id="f-padrao-escala">
+                    <option value="flexivel">Flexível (Sorteio Automático)</option>
+                    <option value="12x36_par">12x36 (Somente Dias PARES)</option>
+                    <option value="12x36_impar">12x36 (Somente Dias ÍMPARES)</option>
+                </select>
+            </div>
             
             <div class="block-regra">
                 <strong>Plantões Externos (Indisponibilidade Fixa):</strong><br>
                 <small>Selecione os dias da semana que o profissional está em outro hospital:</small>
                 <div id="f-restricoes-checks" class="grid-2col" style="margin-top:10px;"></div>
-                <label>Restrição de Paridade:</label>
+                <label>Restrição Flexível de Paridade (se não for 12x36):</label>
                 <select id="f-paridade">
                     <option value="nenhuma">Pode trabalhar em qualquer dia</option>
-                    <option value="pares">Somente dias PARES</option>
-                    <option value="impares">Somente dias ÍMPARES</option>
+                    <option value="pares">Prefere dias PARES</option>
+                    <option value="impares">Prefere dias ÍMPARES</option>
                 </select>
             </div>
 
@@ -157,8 +168,8 @@
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                <button onclick="fecharModais()">Cancelar</button>
-                <button id="btn-save-func" class="btn-add">Salvar Funcionário</button>
+                <button type="button" onclick="fecharModais()" style="padding:10px; border:none; border-radius:5px;">Cancelar</button>
+                <button type="button" id="btn-save-func" class="btn-add">Salvar Funcionário</button>
             </div>
         </div>
     </div>
@@ -169,12 +180,13 @@
             <input type="hidden" id="v-id">
             <label>Nome do Vínculo:</label><input type="text" id="v-nome">
             <div class="block-regra">
-                <label>Farmacêutico: <input type="number" id="v-f-ch" placeholder="CH"> <input type="number" id="v-f-pb" placeholder="Plantões"></label>
-                <label>Técnico: <input type="number" id="v-t-ch" placeholder="CH"> <input type="number" id="v-t-pb" placeholder="Plantões"></label>
+                <label style="color:var(--primary);">Farmacêutico: <div style="display:flex; gap:5px;"><input type="number" id="v-f-ch" placeholder="CH Semanal"> <input type="number" id="v-f-pb" placeholder="Plantões/Mês"></div></label>
+                <label style="color:var(--primary);">Técnico: <div style="display:flex; gap:5px;"><input type="number" id="v-t-ch" placeholder="CH Semanal"> <input type="number" id="v-t-pb" placeholder="Plantões/Mês"></div></label>
+                <label style="color:var(--primary);">Auxiliar: <div style="display:flex; gap:5px;"><input type="number" id="v-a-ch" placeholder="CH Semanal"> <input type="number" id="v-a-pb" placeholder="Plantões/Mês"></div></label>
             </div>
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                <button onclick="fecharModais()">Cancelar</button>
-                <button id="btn-save-vinculo" class="btn-add">Salvar Vínculo</button>
+                <button type="button" onclick="fecharModais()" style="padding:10px; border:none; border-radius:5px;">Cancelar</button>
+                <button type="button" id="btn-save-vinculo" class="btn-add">Salvar Vínculo</button>
             </div>
         </div>
     </div>
@@ -184,7 +196,7 @@
         import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
         // ⚠️ COLOQUE SUAS CREDENCIAIS AQUI
-const firebaseConfig = {
+        const firebaseConfig = {
   apiKey: "AIzaSyAbk6V15l78bL6oiHLrPxyP-esIdHRUgeY",
   authDomain: "gera-plantao.firebaseapp.com",
   projectId: "gera-plantao",
@@ -228,6 +240,7 @@ const firebaseConfig = {
             document.getElementById('modal-setor').style.display='flex';
             document.getElementById('s-id').value = "NOVO";
             document.getElementById('s-dias-checks').innerHTML = diasSemana.map(d => `<label><input type="checkbox" class="s-dia" value="${d}"> ${d.toUpperCase()}</label>`).join("");
+            document.querySelectorAll('#modal-setor input[type="number"]').forEach(input => input.value = 0);
         };
 
         window.editarSetor = (id, data) => {
@@ -240,8 +253,10 @@ const firebaseConfig = {
             const noite = data.necessidade_noturno || {};
             document.getElementById('s-farma-dia').value = dia["Farmacêutico"] || 0;
             document.getElementById('s-tec-dia').value = dia["Técnico de Farmácia"] || 0;
+            document.getElementById('s-aux-dia').value = dia["Auxiliar"] || 0;
             document.getElementById('s-farma-noite').value = noite["Farmacêutico"] || 0;
             document.getElementById('s-tec-noite').value = noite["Técnico de Farmácia"] || 0;
+            document.getElementById('s-aux-noite').value = noite["Auxiliar"] || 0;
             document.querySelectorAll('.s-dia').forEach(ck => ck.checked = data.dias_funcionamento[ck.value]);
         };
 
@@ -254,13 +269,17 @@ const firebaseConfig = {
             snap.forEach(d => {
                 const c = d.data();
                 const vinculosExibicao = (c.vinculos_lista || []).map(v => `<span class="badge-vinculo">${v}</span>`).join("");
-                container.innerHTML += `<div class="card"><h3>${c.nome}</h3><p>${c.funcao}</p><div>${vinculosExibicao}</div><button class="btn-edit-outline" onclick='editarFunc("${d.id}", ${JSON.stringify(c)})'>Editar Restrições</button></div>`;
+                const regime = c.padrao_escala === "12x36_par" ? "[12x36 Par]" : c.padrao_escala === "12x36_impar" ? "[12x36 Ímpar]" : "[Flexível]";
+                container.innerHTML += `<div class="card"><h3>${c.nome} <span style="font-size:12px;color:#666;">${regime}</span></h3><p>${c.funcao}</p><div>${vinculosExibicao}</div><button class="btn-edit-outline" onclick='editarFunc("${d.id}", ${JSON.stringify(c)})'>Editar Restrições</button></div>`;
             });
         };
 
         window.abrirModalFunc = async () => {
             document.getElementById('modal-func').style.display='flex';
             document.getElementById('f-id').value = "NOVO";
+            document.getElementById('f-nome').value = "";
+            document.getElementById('f-paridade').value = "nenhuma";
+            document.getElementById('f-padrao-escala').value = "flexivel";
             document.getElementById('f-restricoes-checks').innerHTML = diasSemana.map(d => `<label><input type="checkbox" class="f-dia" value="${d}"> ${d.toUpperCase()}</label>`).join("");
             
             const vSnap = await getDocs(collection(db, "vinculos"));
@@ -279,6 +298,7 @@ const firebaseConfig = {
             document.getElementById('f-nome').value = data.nome;
             document.getElementById('f-funcao').value = data.funcao;
             document.getElementById('f-paridade').value = data.restricao_paridade || "nenhuma";
+            document.getElementById('f-padrao-escala').value = data.padrao_escala || "flexivel";
             document.querySelectorAll('.f-dia').forEach(ck => ck.checked = (data.restricoes_fixas || {})[ck.value]);
             document.querySelectorAll('.f-vinc-check').forEach(ck => ck.checked = (data.vinculos_lista || []).includes(ck.value));
             afastamentosTemp = data.afastamentos || [];
@@ -292,7 +312,7 @@ const firebaseConfig = {
 
         window.renderAfastamentos = () => {
             const container = document.getElementById('lista-afastamentos');
-            container.innerHTML = afastamentosTemp.map((af, i) => `<div class="item-afastamento"><span>${af.tipo}: ${af.inicio} a ${af.fim}</span><button class="btn-remover" onclick="afastamentosTemp.splice(${i},1);renderAfastamentos();">X</button></div>`).join("");
+            container.innerHTML = afastamentosTemp.map((af, i) => `<div class="item-afastamento"><span>${af.tipo}: ${af.inicio.split('-').reverse().join('/')} a ${af.fim.split('-').reverse().join('/')}</span><button type="button" class="btn-remover" onclick="afastamentosTemp.splice(${i},1);renderAfastamentos();">X</button></div>`).join("");
         };
 
         // --- LÓGICA: VÍNCULOS ---
@@ -303,13 +323,15 @@ const firebaseConfig = {
             container.innerHTML = "";
             snap.forEach(d => {
                 const v = d.data();
-                container.innerHTML += `<div class="card"><h3>${v.nome}</h3><button class="btn-edit-outline" onclick='editarVinculo("${d.id}", ${JSON.stringify(v)})'>Editar Regras</button></div>`;
+                container.innerHTML += `<div class="card"><h3>${v.nome}</h3><p style="font-size:12px;">Farm: ${v.regras["Farmacêutico"]?.plantoes_base || 0}pl | Téc: ${v.regras["Técnico de Farmácia"]?.plantoes_base || 0}pl | Aux: ${v.regras["Auxiliar"]?.plantoes_base || 0}pl</p><button class="btn-edit-outline" onclick='editarVinculo("${d.id}", ${JSON.stringify(v)})'>Editar Regras</button></div>`;
             });
         };
 
         window.abrirModalVinculo = () => {
             document.getElementById('modal-vinculo').style.display='flex';
             document.getElementById('v-id').value = "NOVO";
+            document.getElementById('v-nome').value = "";
+            document.querySelectorAll('#modal-vinculo input[type="number"]').forEach(input => input.value = 0);
         };
 
         window.editarVinculo = (id, data) => {
@@ -320,6 +342,8 @@ const firebaseConfig = {
             document.getElementById('v-f-pb').value = data.regras["Farmacêutico"]?.plantoes_base || 0;
             document.getElementById('v-t-ch').value = data.regras["Técnico de Farmácia"]?.ch_semanal || 0;
             document.getElementById('v-t-pb').value = data.regras["Técnico de Farmácia"]?.plantoes_base || 0;
+            document.getElementById('v-a-ch').value = data.regras["Auxiliar"]?.ch_semanal || 0;
+            document.getElementById('v-a-pb').value = data.regras["Auxiliar"]?.plantoes_base || 0;
         };
 
         // --- SALVAMENTO ---
@@ -333,6 +357,7 @@ const firebaseConfig = {
                 nome: document.getElementById('f-nome').value,
                 funcao: document.getElementById('f-funcao').value,
                 vinculos_lista: vinculosArr,
+                padrao_escala: document.getElementById('f-padrao-escala').value,
                 restricoes_fixas: restri,
                 restricao_paridade: document.getElementById('f-paridade').value,
                 afastamentos: afastamentosTemp,
@@ -348,20 +373,22 @@ const firebaseConfig = {
             const dias = {}; document.querySelectorAll('.s-dia').forEach(ck => dias[ck.value] = ck.checked);
             const dados = {
                 nome: document.getElementById('s-nome').value, sigla: document.getElementById('s-sigla').value, funciona_feriado: document.getElementById('s-feriado').checked, dias_funcionamento: dias,
-                necessidade_diurno: { "Farmacêutico": parseInt(document.getElementById('s-farma-dia').value), "Técnico de Farmácia": parseInt(document.getElementById('s-tec-dia').value) },
-                necessidade_noturno: { "Farmacêutico": parseInt(document.getElementById('s-farma-noite').value), "Técnico de Farmácia": parseInt(document.getElementById('s-tec-noite').value) }
+                necessidade_diurno: { "Farmacêutico": parseInt(document.getElementById('s-farma-dia').value), "Técnico de Farmácia": parseInt(document.getElementById('s-tec-dia').value), "Auxiliar": parseInt(document.getElementById('s-aux-dia').value) },
+                necessidade_noturno: { "Farmacêutico": parseInt(document.getElementById('s-farma-noite').value), "Técnico de Farmácia": parseInt(document.getElementById('s-tec-noite').value), "Auxiliar": parseInt(document.getElementById('s-aux-noite').value) }
             };
-            await setDoc(doc(db, "setores", document.getElementById('s-sigla').value), dados);
+            const id = document.getElementById('s-id').value === "NOVO" ? document.getElementById('s-sigla').value : document.getElementById('s-id').value;
+            await setDoc(doc(db, "setores", id), dados, { merge: true });
             fecharModais(); carregarSetores();
         };
 
         document.getElementById('btn-save-vinculo').onclick = async () => {
-            const id = document.getElementById('v-nome').value.toUpperCase().replace(/\s+/g, '_');
+            const id = document.getElementById('v-id').value === "NOVO" ? document.getElementById('v-nome').value.toUpperCase().replace(/\s+/g, '_') : document.getElementById('v-id').value;
             await setDoc(doc(db, "vinculos", id), {
                 nome: document.getElementById('v-nome').value,
                 regras: {
                     "Farmacêutico": { ch_semanal: parseInt(document.getElementById('v-f-ch').value), plantoes_base: parseInt(document.getElementById('v-f-pb').value) },
-                    "Técnico de Farmácia": { ch_semanal: parseInt(document.getElementById('v-t-ch').value), plantoes_base: parseInt(document.getElementById('v-t-pb').value) }
+                    "Técnico de Farmácia": { ch_semanal: parseInt(document.getElementById('v-t-ch').value), plantoes_base: parseInt(document.getElementById('v-t-pb').value) },
+                    "Auxiliar": { ch_semanal: parseInt(document.getElementById('v-a-ch').value), plantoes_base: parseInt(document.getElementById('v-a-pb').value) }
                 }
             });
             fecharModais(); carregarVinculos();
