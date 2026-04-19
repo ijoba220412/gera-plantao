@@ -9,6 +9,23 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 
     <style>
+        /* Estilos da Escala Móvel */
+        .tabela-escala { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; }
+        .tabela-escala th, .tabela-escala td { border: 1px solid #ddd; padding: 8px 4px; }
+        .tabela-escala th { background: var(--primary); color: white; position: sticky; top: 0; }
+        .td-dia { font-weight: bold; background: #f8f9fa; }
+        .celula-editavel { cursor: pointer; transition: 0.2s; min-width: 80px; }
+        .celula-editavel:hover { background: #e2e6ea; }
+        .alerta-regra { color: #dc3545; font-weight: bold; } /* Nome em vermelho se furar regra de folga */
+        
+        /* CSS Específico para PDF/Impressão (Oculta menus e botões no papel) */
+        @media print {
+            body { background: white; }
+            .sidebar, .header button, #painel-sorteio, #filtros-escala { display: none !important; }
+            .content { padding: 0; overflow: visible; }
+            .tabela-escala { font-size: 10px; }
+        }
+
         :root { --primary: #0056b3; --bg: #f0f2f5; --white: #ffffff; --text: #333; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: var(--bg); display: flex; height: 100vh; color: var(--text); }
         
