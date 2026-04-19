@@ -3,32 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plantão Pro - V2</title>
+    <title>Plantão Pro</title>
     <link rel="manifest" href="manifest.json">
     <style>
         :root { --primary: #0056b3; --bg: #f0f2f5; --white: #ffffff; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); display: flex; height: 100vh; }
         
-        /* Menu Lateral */
         .sidebar { width: 220px; background: var(--primary); color: white; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
         .nav-btn { background: none; border: none; color: white; padding: 12px; text-align: left; cursor: pointer; border-radius: 8px; transition: 0.2s; }
         .nav-btn.active { background: rgba(255,255,255,0.2); font-weight: bold; }
         
-        /* Conteúdo */
         .content { flex: 1; padding: 30px; overflow-y: auto; }
         .view-section { display: none; }
         .view-section.active { display: block; }
         
-        /* Componentes */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         .card { background: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid var(--primary); }
         .btn-add { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-edit { width:100%; margin-top:10px; border:1px solid var(--primary); background:none; color:var(--primary); padding:8px; border-radius:5px; cursor:pointer; }
         
-        /* Modais */
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center; }
         .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 550px; max-height: 85vh; overflow-y: auto; }
-        input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        input, select { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        
+        .funcao-bloco { background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:15px; border-left: 3px solid var(--primary); }
+        .input-row { display: flex; gap: 10px; }
+        .input-row label { flex: 1; font-size: 12px; color: #555; }
         
         @media (max-width: 768px) { body { flex-direction: column; } .sidebar { width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; } }
     </style>
@@ -44,75 +45,79 @@
     </nav>
 
     <main class="content">
+        <section id="view-vinculos" class="view-section">
+            <div class="header"><h1>Vínculos e Regras</h1><button class="btn-add" onclick="abrirNovoVinculo()">+ Novo Vínculo</button></div>
+            <div id="lista-vinculos" class="grid"></div>
+        </section>
+
         <section id="view-setores" class="view-section active">
-            <div class="header"><h1>Setores</h1><button class="btn-add" onclick="abrirNovoSetor()">+ Novo Setor</button></div>
+            <div class="header"><h1>Setores</h1><button class="btn-add">+ Novo Setor</button></div>
             <div id="lista-setores" class="grid"></div>
         </section>
 
         <section id="view-equipe" class="view-section">
-            <div class="header"><h1>Corpo Técnico</h1><button class="btn-add" onclick="abrirNovoFuncionario()">+ Novo Funcionário</button></div>
+            <div class="header"><h1>Corpo Técnico</h1><button class="btn-add">+ Novo Funcionário</button></div>
             <div id="lista-equipe" class="grid"></div>
-        </section>
-
-        <section id="view-vinculos" class="view-section">
-            <div class="header"><h1>Vínculos e Regras</h1><button class="btn-add" onclick="abrirNovoVinculo()">+ Novo Vínculo</button></div>
-            <div id="lista-vinculos" class="grid"></div>
         </section>
 
         <section id="view-escala" class="view-section">
             <div class="header"><h1>Gerador de Escala</h1></div>
             <div class="card" style="max-width: 450px;">
                 <label>Mês:</label>
-                <select id="gen-mes">
-                    <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
-                    <option value="4" selected>Abril</option><option value="5">Maio</option><option value="6">Junho</option>
-                    <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
-                    <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
-                </select>
-                <label>Ano:</label>
-                <input type="number" id="gen-ano" value="2026">
-                <button class="btn-add" style="width:100%; margin-top:20px;" onclick="iniciarGerador()">🚀 Processar Escala Inteligente</button>
+                <select id="gen-mes"><option value="4" selected>Abril</option><option value="5">Maio</option></select>
+                <label>Ano:</label><input type="number" id="gen-ano" value="2026">
+                <button class="btn-add" style="width:100%; margin-top:20px;">🚀 Processar Escala</button>
             </div>
         </section>
     </main>
 
-    <div id="modal-func" class="modal">
+    <div id="modal-vinculo" class="modal">
         <div class="modal-content">
-            <h2 id="tit-func">Funcionário</h2>
-            <input type="hidden" id="f-id">
-            <label>Nome:</label><input type="text" id="f-nome">
-            <label>Função:</label>
-            <select id="f-funcao">
-                <option>Técnico de Farmácia</option>
-                <option>Farmacêutico</option>
-                <option>Auxiliar</option>
-            </select>
-            <label>Vínculo Principal:</label>
-            <select id="f-vinculo-lista"></select>
+            <h2 id="tit-vinculo">Editar Vínculo</h2>
+            <input type="hidden" id="v-id">
+            
+            <label style="font-weight:bold;">Nome do Vínculo (Ex: FIOTEC, CLT):</label>
+            <input type="text" id="v-nome" placeholder="Digite o nome do vínculo">
 
-            <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-top:15px;">
-                <strong>Restrições (Caso Renata):</strong><br>
-                <small>Dias fixos que NÃO pode trabalhar:</small>
-                <div id="f-restricoes-fixas" style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:10px;"></div>
+            <div class="funcao-bloco">
+                <h3 style="margin:0 0 10px 0; font-size:16px;">💊 Farmacêutico</h3>
+                <div class="input-row">
+                    <label>CH Semanal:<input type="number" id="v-farma-ch"></label>
+                    <label>Plantões Base:<input type="number" id="v-farma-pb"></label>
+                    <label>Horas/Plantão:<input type="number" id="v-farma-hp"></label>
+                </div>
             </div>
 
-            <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-top:15px;">
-                <strong>Indisponibilidade (Caso Allan):</strong><br>
-                <small>Datas específicas (separadas por vírgula):</small>
-                <input type="text" id="f-datas-bloqueio" placeholder="Ex: 2026-05-02, 2026-05-15">
+            <div class="funcao-bloco">
+                <h3 style="margin:0 0 10px 0; font-size:16px;">🧪 Técnico de Farmácia</h3>
+                <div class="input-row">
+                    <label>CH Semanal:<input type="number" id="v-tec-ch"></label>
+                    <label>Plantões Base:<input type="number" id="v-tec-pb"></label>
+                    <label>Horas/Plantão:<input type="number" id="v-tec-hp"></label>
+                </div>
+            </div>
+
+            <div class="funcao-bloco">
+                <h3 style="margin:0 0 10px 0; font-size:16px;">📦 Auxiliar</h3>
+                <div class="input-row">
+                    <label>CH Semanal:<input type="number" id="v-aux-ch"></label>
+                    <label>Plantões Base:<input type="number" id="v-aux-pb"></label>
+                    <label>Horas/Plantão:<input type="number" id="v-aux-hp"></label>
+                </div>
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                <button onclick="fecharModais()" style="padding:10px;">Cancelar</button>
-                <button id="btn-save-func" class="btn-add">Salvar Funcionário</button>
+                <button onclick="fecharModais()" style="padding:10px 20px; border-radius:5px; border:none;">Cancelar</button>
+                <button id="btn-save-vinculo" class="btn-add">Salvar no Firebase</button>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
+        // ⚠️ COLE SUA CHAVE DO FIREBASE AQUI ⚠️
         const firebaseConfig = {
   apiKey: "AIzaSyAbk6V15l78bL6oiHLrPxyP-esIdHRUgeY",
   authDomain: "gera-plantao.firebaseapp.com",
@@ -126,55 +131,108 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // NAVEGAÇÃO
+        // Funções de Navegação
         window.showView = (v) => {
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`view-${v}`).classList.add('active');
             event.target.classList.add('active');
-            if(v === 'setores') carregarSetores();
-            if(v === 'equipe') carregarEquipe();
             if(v === 'vinculos') carregarVinculos();
+            // Adicionaremos carregarSetores e Equipe depois
         };
+        window.fecharModais = () => document.querySelectorAll('.modal').forEach(m => m.style.display='none');
 
-        // CARREGAR EQUIPE
-        async function carregarEquipe() {
-            const container = document.getElementById('lista-equipe');
-            container.innerHTML = "Carregando...";
-            const snap = await getDocs(query(collection(db, "colaboradores"), orderBy("nome")));
+        // ==== LÓGICA DE VÍNCULOS ==== //
+        
+        // 1. Puxar do Banco de Dados
+        window.carregarVinculos = async () => {
+            const container = document.getElementById('lista-vinculos');
+            container.innerHTML = "Carregando regras...";
+            const snap = await getDocs(collection(db, "vinculos"));
             container.innerHTML = "";
             snap.forEach(d => {
-                const c = d.data();
+                const v = d.data();
                 container.innerHTML += `
                     <div class="card">
-                        <h3>${c.nome}</h3>
-                        <p><strong>${c.funcao}</strong> | ${c.vinculo_slug || 'Sem Vínculo'}</p>
-                        <button onclick='editarFunc("${d.id}", ${JSON.stringify(c)})' style="width:100%; cursor:pointer;">Editar Regras</button>
-                    </div>`;
-            });
-        }
-
-        // EDITAR FUNCIONÁRIO (Allan e Renata)
-        window.editarFunc = (id, data) => {
-            document.getElementById('modal-func').style.display = 'flex';
-            document.getElementById('f-id').value = id;
-            document.getElementById('f-nome').value = data.nome;
-            document.getElementById('f-funcao').value = data.funcao;
-            document.getElementById('f-datas-bloqueio').value = (data.datas_bloqueadas || []).join(", ");
-            
-            const dias = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"];
-            const resContainer = document.getElementById('f-restricoes-fixas');
-            resContainer.innerHTML = "";
-            dias.forEach(dia => {
-                const checked = (data.restricoes_fixas || {})[dia] ? 'checked' : '';
-                resContainer.innerHTML += `<label><input type="checkbox" class="chk-res" value="${dia}" ${checked}> ${dia.toUpperCase()}</label>`;
+                        <h3 style="margin-top:0;">${v.nome}</h3>
+                        <p style="font-size:14px; margin:5px 0;"><strong>Téc:</strong> ${v.regras["Técnico de Farmácia"]?.ch_semanal || 0}h | ${v.regras["Técnico de Farmácia"]?.plantoes_base || 0} plantões</p>
+                        <p style="font-size:14px; margin:5px 0;"><strong>Farm:</strong> ${v.regras["Farmacêutico"]?.ch_semanal || 0}h | ${v.regras["Farmacêutico"]?.plantoes_base || 0} plantões</p>
+                        <button onclick='editarVinculo("${d.id}", ${JSON.stringify(v)})' class="btn-edit">Editar Regras</button>
+                    </div>
+                `;
             });
         };
 
-        window.fecharModais = () => document.querySelectorAll('.modal').forEach(m => m.display='none');
+        // 2. Abrir a Modal para Criar Novo
+        window.abrirNovoVinculo = () => {
+            document.getElementById('modal-vinculo').style.display = 'flex';
+            document.getElementById('v-id').value = "NOVO";
+            document.getElementById('v-nome').value = "";
+            document.querySelectorAll('#modal-vinculo input[type="number"]').forEach(input => input.value = 0);
+        };
 
-        // INICIALIZAÇÃO
-        carregarSetores();
+        // 3. Abrir a Modal para Editar Existente
+        window.editarVinculo = (id, data) => {
+            document.getElementById('modal-vinculo').style.display = 'flex';
+            document.getElementById('v-id').value = id;
+            document.getElementById('v-nome').value = data.nome;
+            
+            const rFarma = data.regras["Farmacêutico"] || {};
+            document.getElementById('v-farma-ch').value = rFarma.ch_semanal || 0;
+            document.getElementById('v-farma-pb').value = rFarma.plantoes_base || 0;
+            document.getElementById('v-farma-hp').value = rFarma.horas_plantao || 0;
+
+            const rTec = data.regras["Técnico de Farmácia"] || {};
+            document.getElementById('v-tec-ch').value = rTec.ch_semanal || 0;
+            document.getElementById('v-tec-pb').value = rTec.plantoes_base || 0;
+            document.getElementById('v-tec-hp').value = rTec.horas_plantao || 0;
+
+            const rAux = data.regras["Auxiliar"] || {};
+            document.getElementById('v-aux-ch').value = rAux.ch_semanal || 0;
+            document.getElementById('v-aux-pb').value = rAux.plantoes_base || 0;
+            document.getElementById('v-aux-hp').value = rAux.horas_plantao || 0;
+        };
+
+        // 4. Salvar no Banco
+        document.getElementById('btn-save-vinculo').onclick = async () => {
+            const btn = document.getElementById('btn-save-vinculo');
+            btn.innerText = "Salvando...";
+            
+            let id = document.getElementById('v-id').value;
+            const nomeStr = document.getElementById('v-nome').value;
+            
+            // Se for novo, usa o nome como ID (sem espaços)
+            if (id === "NOVO") id = nomeStr.toUpperCase().replace(/\s+/g, '_');
+
+            const dadosSalvar = {
+                nome: nomeStr,
+                regras: {
+                    "Farmacêutico": {
+                        ch_semanal: parseInt(document.getElementById('v-farma-ch').value),
+                        plantoes_base: parseInt(document.getElementById('v-farma-pb').value),
+                        horas_plantao: parseInt(document.getElementById('v-farma-hp').value)
+                    },
+                    "Técnico de Farmácia": {
+                        ch_semanal: parseInt(document.getElementById('v-tec-ch').value),
+                        plantoes_base: parseInt(document.getElementById('v-tec-pb').value),
+                        horas_plantao: parseInt(document.getElementById('v-tec-hp').value)
+                    },
+                    "Auxiliar": {
+                        ch_semanal: parseInt(document.getElementById('v-aux-ch').value),
+                        plantoes_base: parseInt(document.getElementById('v-aux-pb').value),
+                        horas_plantao: parseInt(document.getElementById('v-aux-hp').value)
+                    }
+                }
+            };
+
+            await setDoc(doc(db, "vinculos", id), dadosSalvar);
+            fecharModais();
+            carregarVinculos(); // Recarrega a tela instantaneamente
+            btn.innerText = "Salvar no Firebase";
+        };
+
+        // Carrega inicial
+        carregarVinculos();
     </script>
 </body>
 </html>
