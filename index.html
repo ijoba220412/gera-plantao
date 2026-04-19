@@ -432,6 +432,204 @@
                 necessidade_diurno: { "Farmacêutico": parseInt(document.getElementById('s-farma-dia').value), "Técnico de Farmácia": parseInt(document.getElementById('s-tec-dia').value), "Auxiliar": parseInt(document.getElementById('s-aux-dia').value) },
                 necessidade_noturno: { "Farmacêutico": parseInt(document.getElementById('s-farma-noite').value), "Técnico de Farmácia": parseInt(document.getElementById('s-tec-noite').value), "Auxiliar": parseInt(document.getElementById('s-aux-noite').value) }
             };
+        // =========================================================
+        // 🧠 CÉREBRO DA ESCALA (ALGORITMO DE SORTEIO E FILTROS)
+        // =========================================================
+
+        window.iniciarSorteio = async () => {
+            const btn = document.querySelector('#painel-sorteio button');
+            btn.innerText = "⏳ A processar... (Analisando regras)";
+            btn.disabled = true;
+
+            try {
+                // 1. Puxar todos os dados frescos do banco
+                const setoresSnap = await getDocs(collection(db, "setores"));
+                const equipeSnap = await getDocs(query(collection(db, "colaboradores")));
+
+                let setores = []; setoresSnap.forEach(d => setores.push({id: d.id, ...d.data()}));
+                let equipe = []; equipeSnap.forEach(d => equipe.push({id: d.id, ...d.data()}));
+
+                // 2. Setup do Mês e Calendário
+                const mes = parseInt(document.getElementById('gen-mes').value);
+                const ano = parseInt(document.getElementById('gen-ano').value);
+                const numDias = new Date(ano, mes, 0).getDate();
+                const diasSemanaNome = ["dom", "seg", "ter", "qua", "qui", "sex", "sab"];
+
+                // 3. Montar a "Carroçaria" da Tabela dinamicamente
+                let html = `<table class="tabela-escala" id="tabela-escala-final"><thead><tr><th>Dia</th>`;
+                let colunasDeTrabalho = [];
+
+                setores.forEach(s => {
+                    const funcDiurno = s.necessidade_diurno || {};
+                    Object.keys(funcDiurno).forEach(f => {
+                        if(funcDiurno[f] > 0) { 
+                            html += `<th class="col-${f.substring(0,3).toLowerCase()}">${s.sigla} - ${f.split(' ')[0]} (Dia)</th>`; 
+                            colunasDeTrabalho.push({setor: s, turno: 'Dia', funcao: f, qtd: funcDiurno[f]}); 
+                        }
+                    });
+                    const funcNoturno = s.necessidade_noturno || {};
+                    Object.keys(funcNoturno).forEach(f => {
+                        if(funcNoturno[f] > 0) { 
+                            html += `<th class="col-${f.substring(0,3).toLowerCase()}">${s.sigla} - ${f.split(' ')[0]} (Noite)</th>`; 
+                            colunasDeTrabalho.push({setor: s, turno: 'Noite', funcao: f, qtd: funcNoturno[f]}); 
+                        }
+                    });
+                });
+                html += `</tr></thead><tbody>`;
+
+                // 4. O Sorteio (Varrendo Dia a Dia)
+                for(let dia = 1; dia <= numDias; dia++) {
+                    const dataAtual = new Date(ano, mes - 1, dia);
+                    const diaSem = diasSemanaNome[dataAtual.getDay()];
+                    // Formata a data para comparar com afastamentos (YYYY-MM-DD)
+                    const dataStr = `${ano}-${String(mes).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+
+                    html += `<tr><td class="td-dia">${String(dia).padStart(2,'0')} (${diaSem.toUpperCase()})</td>`;
+
+                    colunasDeTrabalho.forEach(col => {
+                        // Verifica se o setor funciona hoje
+                        if(!col.setor.dias_funcionamento[diaSem]) {
+                            html += `<td class="col-${col.funcao.substring(0,3).toLowerCase()}" style="background:#eee;">-</td>`;
+                            return;
+                        }
+
+                        let escaladosNesteTurno = [];
+                        
+                        for(let vaga = 0; vaga < col.qtd; vaga++) {
+                            // Filtro Nível 1: Regras Inquebráveis (Hard Rules)
+                            let candidatos = equipe.filter(c => {
+                                if(c.funcao !== col.funcao || !c.status_ativo) return false;
+                                
+                                // Bloqueio de Férias/Licenças
+                                let afastado = false;
+                                if(c.afastamentos) {
+                                    c.afastamentos.forEach(af => { if(dataStr >= af.inicio && dataStr <= af.fim) afastado = true; });
+                                }
+                                if(afastado) return false;
+
+                                // Bloqueio 12x36
+                                if(c.padrao_escala === "12x36_par" && dia % 2 !== 0) return false;
+                                if(c.padrao_escala === "12x36_impar" && dia % 2 === 0) return false;
+
+                                // Para evitar dobradinha no mesmo turno (não escalar 2x o mesmo cara)
+                                if(escaladosNesteTurno.includes(c.nome)) return false;
+
+                                return true;
+                            });
+
+                            // Embaralhar a lista para o sorteio ser justo
+                            candidatos.sort(() => Math.random() - 0.5);
+
+                            let escolhido = null;
+                            let avisoFuroRegra = false;
+
+                            // Filtro Nível 2: Preferências (Soft Rules - Plantões Externos)
+                            let candidatosLivres = candidatos.filter(c => !(c.restricoes_fixas && c.restricoes_fixas[diaSem]));
+
+                            if(candidatosLivres.length > 0) {
+                                escolhido = candidatosLivres[0]; // Pega o primeiro livre
+                            } else if (candidatos.length > 0) {
+                                // Ninguém livre? Pega o primeiro disponível e marca como aviso!
+                                escolhido = candidatos[0];
+                                avisoFuroRegra = true;
+                            }
+
+                            if(escolhido) {
+                                escaladosNesteTurno.push(escolhido.nome);
+                                // Pega só o primeiro e segundo nome para não ficar gigante na tabela
+                                let nomeCurto = escolhido.nome.split(' ').slice(0, 2).join(' ');
+                                let classeAviso = avisoFuroRegra ? "alerta-regra" : "";
+                                let iconeAviso = avisoFuroRegra ? "⚠️" : "";
+                                
+                                html += `<td class="col-${col.funcao.substring(0,3).toLowerCase()} celula-editavel" onclick="editarCelula(this)" title="Clique para alterar">${nomeCurto} <span class="${classeAviso}">${iconeAviso}</span></td>`;
+                            } else {
+                                html += `<td class="col-${col.funcao.substring(0,3).toLowerCase()} celula-editavel" onclick="editarCelula(this)" style="color:red; font-weight:bold;">[FALTOU]</td>`;
+                            }
+                        }
+                    });
+                    html += `</tr>`;
+                }
+
+                html += `</tbody></table>`;
+                document.getElementById('tabela-container').innerHTML = html;
+                document.getElementById('filtros-escala').style.display = 'flex'; // Mostra os filtros
+
+            } catch (e) {
+                console.error("Erro no motor:", e);
+                alert("Erro ao gerar escala. Verifique o console.");
+            }
+
+            btn.innerText = "🚀 Gerar Escala Inteligente";
+            btn.disabled = false;
+        };
+
+        // --- FUNÇÃO PARA EDITAR A ESCALA MÓVEL NA TELA ---
+        window.editarCelula = (elemento) => {
+            let nomeAtual = elemento.innerText.replace('⚠️', '').trim();
+            let novoNome = prompt("Alterar escalado neste turno:\n(Para deixar vazio, apenas apague o texto)", nomeAtual);
+            
+            if(novoNome !== null) {
+                if(novoNome.trim() === "") {
+                    elemento.innerHTML = `<span style="color:red; font-weight:bold;">[FALTOU]</span>`;
+                } else {
+                    elemento.innerHTML = novoNome.trim();
+                    elemento.style.color = "blue"; // Fica azul para você saber que foi alterado manualmente
+                }
+            }
+        };
+
+        // --- FUNÇÃO PARA O FILTRO (Ver Separado ou Juntos) ---
+        window.aplicarFiltroTabela = () => {
+            const filtro = document.getElementById('filtro-funcao').value;
+            const tabela = document.getElementById('tabela-escala-final');
+            if(!tabela) return;
+
+            // Pega o prefixo (Ex: "Far", "Téc", "Aux")
+            const prefixo = filtro === "TODOS" ? "TODOS" : filtro.substring(0,3).toLowerCase();
+
+            // Esconder/Mostrar colunas do cabeçalho
+            const headers = tabela.querySelectorAll('th');
+            headers.forEach((th, index) => {
+                if(index === 0) return; // Pula a coluna do "Dia"
+                if(prefixo === "TODOS" || th.classList.contains(`col-${prefixo}`)) {
+                    th.style.display = 'table-cell';
+                } else {
+                    th.style.display = 'none';
+                }
+            });
+
+            // Esconder/Mostrar colunas do corpo
+            const linhas = tabela.querySelectorAll('tbody tr');
+            linhas.forEach(tr => {
+                const celulas = tr.querySelectorAll('td');
+                celulas.forEach((td, index) => {
+                    if(index === 0) return; // Pula a coluna do "Dia"
+                    if(prefixo === "TODOS" || td.classList.contains(`col-${prefixo}`)) {
+                        td.style.display = 'table-cell';
+                    } else {
+                        td.style.display = 'none';
+                    }
+                });
+            });
+        };
+
+        // --- FUNÇÃO PARA EXPORTAR EXCEL ---
+        window.exportarExcel = () => {
+            const tabela = document.getElementById('tabela-escala-final');
+            if(!tabela) {
+                alert("Gere a escala primeiro antes de exportar.");
+                return;
+            }
+            
+            // O SheetJS (XLSX) lê a tabela HTML diretamente e converte
+            const wb = XLSX.utils.table_to_book(tabela, {sheet: "Escala_Plantao_Pro"});
+            const mes = document.getElementById('gen-mes').options[document.getElementById('gen-mes').selectedIndex].text;
+            const ano = document.getElementById('gen-ano').value;
+            
+            XLSX.writeFile(wb, `Escala_${mes}_${ano}.xlsx`);
+        };
+        // =========================================================
+
             const id = document.getElementById('s-id').value === "NOVO" ? document.getElementById('s-sigla').value : document.getElementById('s-id').value;
             await setDoc(doc(db, "setores", id), dados, { merge: true });
             fecharModais(); carregarSetores();
