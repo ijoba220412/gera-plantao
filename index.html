@@ -201,14 +201,15 @@
         import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
         // ⚠️ COLE AQUI AS SUAS CREDENCIAIS REAIS DO FIREBASE
-        const firebaseConfig = {
-            apiKey: "SUA_API_KEY_AQUI",
-            authDomain: "SEU_PROJETO.firebaseapp.com",
-            projectId: "SEU_PROJETO",
-            storageBucket: "SEU_PROJETO.appspot.com",
-            messagingSenderId: "SEU_ID",
-            appId: "SEU_APP_ID"
-        };
+   const firebaseConfig = {
+  apiKey: "AIzaSyAbk6V15l78bL6oiHLrPxyP-esIdHRUgeY",
+  authDomain: "gera-plantao.firebaseapp.com",
+  projectId: "gera-plantao",
+  storageBucket: "gera-plantao.firebasestorage.app",
+  messagingSenderId: "258830362074",
+  appId: "1:258830362074:web:baf321d113aa34f933cce3",
+  measurementId: "G-HRPB2NGFC6"
+};
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
