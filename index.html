@@ -9,23 +9,6 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 
     <style>
-        /* Estilos da Escala Móvel */
-        .tabela-escala { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; }
-        .tabela-escala th, .tabela-escala td { border: 1px solid #ddd; padding: 8px 4px; }
-        .tabela-escala th { background: var(--primary); color: white; position: sticky; top: 0; }
-        .td-dia { font-weight: bold; background: #f8f9fa; }
-        .celula-editavel { cursor: pointer; transition: 0.2s; min-width: 80px; }
-        .celula-editavel:hover { background: #e2e6ea; }
-        .alerta-regra { color: #dc3545; font-weight: bold; }
-        
-        /* CSS Específico para PDF/Impressão */
-        @media print {
-            body { background: white; }
-            .sidebar, .header button, #painel-sorteio, #filtros-escala { display: none !important; }
-            .content { padding: 0; overflow: visible; }
-            .tabela-escala { font-size: 10px; }
-        }
-
         :root { --primary: #0056b3; --bg: #f0f2f5; --white: #ffffff; --text: #333; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: var(--bg); display: flex; height: 100vh; color: var(--text); }
         
@@ -56,6 +39,23 @@
         .block-regra { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-top: 15px; border-left: 4px solid var(--primary); }
         .item-afastamento { display:flex; justify-content:space-between; background:#fff; border:1px solid #ddd; padding:10px; margin-top:8px; border-radius:6px; font-size:13px; }
         .btn-remover { color: red; background: none; border: none; font-weight: bold; cursor: pointer; }
+
+        /* Estilos da Escala Móvel */
+        .tabela-escala { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; margin-top: 20px;}
+        .tabela-escala th, .tabela-escala td { border: 1px solid #ddd; padding: 8px 4px; }
+        .tabela-escala th { background: var(--primary); color: white; position: sticky; top: 0; }
+        .td-dia { font-weight: bold; background: #f8f9fa; }
+        .celula-editavel { cursor: pointer; transition: 0.2s; min-width: 80px; }
+        .celula-editavel:hover { background: #e2e6ea; }
+        .alerta-regra { color: #dc3545; font-weight: bold; }
+        
+        /* CSS Específico para PDF/Impressão */
+        @media print {
+            body { background: white; }
+            .sidebar, .header button, #painel-sorteio, #filtros-escala { display: none !important; }
+            .content { padding: 0; overflow: visible; }
+            .tabela-escala { font-size: 10px; }
+        }
 
         @media (max-width: 768px) {
             body { flex-direction: column; }
@@ -179,7 +179,6 @@
             
             <div class="block-regra">
                 <strong>Vínculos Empregatícios:</strong><br>
-                <small>Selecione todos os contratos que este profissional possui:</small>
                 <div id="f-vinculos-checks" class="grid-2col" style="margin-top:10px;"></div>
             </div>
 
@@ -194,9 +193,8 @@
             
             <div class="block-regra">
                 <strong>Plantões Externos (Indisponibilidade Fixa):</strong><br>
-                <small>Selecione os dias da semana que o profissional está em outro hospital:</small>
                 <div id="f-restricoes-checks" class="grid-2col" style="margin-top:10px;"></div>
-                <label>Restrição Flexível de Paridade (se não for 12x36):</label>
+                <label>Restrição Flexível de Paridade:</label>
                 <select id="f-paridade">
                     <option value="nenhuma">Pode trabalhar em qualquer dia</option>
                     <option value="pares">Prefere dias PARES</option>
@@ -231,9 +229,9 @@
             <input type="hidden" id="v-id">
             <label>Nome do Vínculo:</label><input type="text" id="v-nome">
             <div class="block-regra">
-                <label style="color:var(--primary);">Farmacêutico: <div style="display:flex; gap:5px;"><input type="number" id="v-f-ch" placeholder="CH Semanal"> <input type="number" id="v-f-pb" placeholder="Plantões/Mês"></div></label>
-                <label style="color:var(--primary);">Técnico: <div style="display:flex; gap:5px;"><input type="number" id="v-t-ch" placeholder="CH Semanal"> <input type="number" id="v-t-pb" placeholder="Plantões/Mês"></div></label>
-                <label style="color:var(--primary);">Auxiliar: <div style="display:flex; gap:5px;"><input type="number" id="v-a-ch" placeholder="CH Semanal"> <input type="number" id="v-a-pb" placeholder="Plantões/Mês"></div></label>
+                <label style="color:var(--primary);">Farmacêutico: <div style="display:flex; gap:5px;"><input type="number" id="v-f-ch" placeholder="CH"> <input type="number" id="v-f-pb" placeholder="Plantões"></div></label>
+                <label style="color:var(--primary);">Técnico: <div style="display:flex; gap:5px;"><input type="number" id="v-t-ch" placeholder="CH"> <input type="number" id="v-t-pb" placeholder="Plantões"></div></label>
+                <label style="color:var(--primary);">Auxiliar: <div style="display:flex; gap:5px;"><input type="number" id="v-a-ch" placeholder="CH"> <input type="number" id="v-a-pb" placeholder="Plantões"></div></label>
             </div>
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
                 <button type="button" onclick="fecharModais()" style="padding:10px; border:none; border-radius:5px;">Cancelar</button>
@@ -246,7 +244,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
         import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
-        // As suas credenciais do Firebase
+        // ⚠️ COLOQUE SUAS CREDENCIAIS AQUI
         const firebaseConfig = {
           apiKey: "AIzaSyAbk6V15l78bL6oiHLrPxyP-esIdHRUgeY",
           authDomain: "gera-plantao.firebaseapp.com",
@@ -300,8 +298,11 @@
             document.getElementById('s-nome').value = data.nome;
             document.getElementById('s-sigla').value = data.sigla || id;
             document.getElementById('s-feriado').checked = data.funciona_feriado;
-            const dia = data.necessidade_diurno || {};
+            
+            // Retrocompatibilidade para quando abre o modal
+            const dia = data.necessidade_diurno || data.necessidade_por_turno || {};
             const noite = data.necessidade_noturno || {};
+            
             document.getElementById('s-farma-dia').value = dia["Farmacêutico"] || 0;
             document.getElementById('s-tec-dia').value = dia["Técnico de Farmácia"] || 0;
             document.getElementById('s-aux-dia').value = dia["Auxiliar"] || 0;
@@ -412,7 +413,7 @@
                 restricoes_fixas: restri,
                 restricao_paridade: document.getElementById('f-paridade').value,
                 afastamentos: afastamentosTemp,
-                status_ativo: true
+                status_ativo: true // Isto resolve o problema dos "inativos"
             };
             const id = document.getElementById('f-id').value;
             if(id === "NOVO") await setDoc(doc(collection(db, "colaboradores")), dados);
@@ -470,7 +471,8 @@
                 let colunasDeTrabalho = [];
 
                 setores.forEach(s => {
-                    const funcDiurno = s.necessidade_diurno || {};
+                    // RETROCOMPATIBILIDADE: Se o setor for antigo, lê a propriedade antiga
+                    const funcDiurno = s.necessidade_diurno || s.necessidade_por_turno || {};
                     Object.keys(funcDiurno).forEach(f => {
                         if(funcDiurno[f] > 0) { 
                             html += `<th class="col-${f.substring(0,3).toLowerCase()}">${s.sigla} - ${f.split(' ')[0]} (Dia)</th>`; 
@@ -485,6 +487,7 @@
                         }
                     });
                 });
+                
                 html += `</tr></thead><tbody>`;
 
                 for(let dia = 1; dia <= numDias; dia++) {
@@ -495,7 +498,7 @@
                     html += `<tr><td class="td-dia">${String(dia).padStart(2,'0')} (${diaSem.toUpperCase()})</td>`;
 
                     colunasDeTrabalho.forEach(col => {
-                        if(!col.setor.dias_funcionamento[diaSem]) {
+                        if(!col.setor.dias_funcionamento || !col.setor.dias_funcionamento[diaSem]) {
                             html += `<td class="col-${col.funcao.substring(0,3).toLowerCase()}" style="background:#eee;">-</td>`;
                             return;
                         }
@@ -504,7 +507,11 @@
                         
                         for(let vaga = 0; vaga < col.qtd; vaga++) {
                             let candidatos = equipe.filter(c => {
-                                if(c.funcao !== col.funcao || !c.status_ativo) return false;
+                                // Aceita diferenças nos cargos antigos vs novos
+                                if(!c.funcao || !c.funcao.includes(col.funcao.split(' ')[0])) return false;
+                                
+                                // Se os dados forem velhos e não tiverem status_ativo, deixa passar
+                                if(c.status_ativo === false) return false;
                                 
                                 let afastado = false;
                                 if(c.afastamentos) {
@@ -512,8 +519,9 @@
                                 }
                                 if(afastado) return false;
 
-                                if(c.padrao_escala === "12x36_par" && dia % 2 !== 0) return false;
-                                if(c.padrao_escala === "12x36_impar" && dia % 2 === 0) return false;
+                                let padrao = c.padrao_escala || "flexivel";
+                                if(padrao === "12x36_par" && dia % 2 !== 0) return false;
+                                if(padrao === "12x36_impar" && dia % 2 === 0) return false;
 
                                 if(escaladosNesteTurno.includes(c.nome)) return false;
 
@@ -555,7 +563,7 @@
 
             } catch (e) {
                 console.error("Erro no motor:", e);
-                alert("Erro ao gerar escala. Verifique o console.");
+                alert("Erro ao gerar escala: " + e.message);
             }
 
             btn.innerText = "🚀 Gerar Escala Inteligente";
