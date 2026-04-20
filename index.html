@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Plantão Pro - Sistema Integrado</title>
+    <title>Plantão Pro - Sistema Integrado</title>
     <link rel="manifest" href="manifest.json">
     
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
@@ -16,9 +16,9 @@
         .td-dia { font-weight: bold; background: #f8f9fa; }
         .celula-editavel { cursor: pointer; transition: 0.2s; min-width: 80px; }
         .celula-editavel:hover { background: #e2e6ea; }
-        .alerta-regra { color: #dc3545; font-weight: bold; } /* Nome em vermelho se furar regra de folga */
+        .alerta-regra { color: #dc3545; font-weight: bold; }
         
-        /* CSS Específico para PDF/Impressão (Oculta menus e botões no papel) */
+        /* CSS Específico para PDF/Impressão */
         @media print {
             body { background: white; }
             .sidebar, .header button, #painel-sorteio, #filtros-escala { display: none !important; }
@@ -91,7 +91,7 @@
             <div id="lista-vinculos" class="grid">Carregando vínculos...</div>
         </section>
 
-                <section id="view-escala" class="view-section">
+        <section id="view-escala" class="view-section">
             <div class="header">
                 <h1>Gerador e Escala Móvel</h1>
                 <div>
@@ -131,11 +131,6 @@
 
             <div id="tabela-container" style="background:#fff; border-radius:12px; box-shadow:0 4px 6px rgba(0,0,0,0.05); overflow-x:auto;">
                 <p style="padding:30px; text-align:center; color:#666;">A escala será exibida aqui após o processamento.</p>
-            </div>
-        </section>
-
-                <label>Ano:</label><input type="number" id="gen-ano" value="2026">
-                <button class="btn-add" style="width:100%; margin-top:20px;">🚀 Iniciar Sorteio Inteligente</button>
             </div>
         </section>
     </main>
@@ -251,16 +246,16 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
         import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
-        // ⚠️ COLOQUE SUAS CREDENCIAIS AQUI
+        // As suas credenciais do Firebase
         const firebaseConfig = {
-  apiKey: "AIzaSyAbk6V15l78bL6oiHLrPxyP-esIdHRUgeY",
-  authDomain: "gera-plantao.firebaseapp.com",
-  projectId: "gera-plantao",
-  storageBucket: "gera-plantao.firebasestorage.app",
-  messagingSenderId: "258830362074",
-  appId: "1:258830362074:web:baf321d113aa34f933cce3",
-  measurementId: "G-HRPB2NGFC6"
-};
+          apiKey: "AIzaSyAbk6V15l78bL6oiHLrPxyP-esIdHRUgeY",
+          authDomain: "gera-plantao.firebaseapp.com",
+          projectId: "gera-plantao",
+          storageBucket: "gera-plantao.firebasestorage.app",
+          messagingSenderId: "258830362074",
+          appId: "1:258830362074:web:baf321d113aa34f933cce3",
+          measurementId: "G-HRPB2NGFC6"
+        };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -432,6 +427,24 @@
                 necessidade_diurno: { "Farmacêutico": parseInt(document.getElementById('s-farma-dia').value), "Técnico de Farmácia": parseInt(document.getElementById('s-tec-dia').value), "Auxiliar": parseInt(document.getElementById('s-aux-dia').value) },
                 necessidade_noturno: { "Farmacêutico": parseInt(document.getElementById('s-farma-noite').value), "Técnico de Farmácia": parseInt(document.getElementById('s-tec-noite').value), "Auxiliar": parseInt(document.getElementById('s-aux-noite').value) }
             };
+            const id = document.getElementById('s-id').value === "NOVO" ? document.getElementById('s-sigla').value : document.getElementById('s-id').value;
+            await setDoc(doc(db, "setores", id), dados, { merge: true });
+            fecharModais(); carregarSetores();
+        };
+
+        document.getElementById('btn-save-vinculo').onclick = async () => {
+            const id = document.getElementById('v-id').value === "NOVO" ? document.getElementById('v-nome').value.toUpperCase().replace(/\s+/g, '_') : document.getElementById('v-id').value;
+            await setDoc(doc(db, "vinculos", id), {
+                nome: document.getElementById('v-nome').value,
+                regras: {
+                    "Farmacêutico": { ch_semanal: parseInt(document.getElementById('v-f-ch').value), plantoes_base: parseInt(document.getElementById('v-f-pb').value) },
+                    "Técnico de Farmácia": { ch_semanal: parseInt(document.getElementById('v-t-ch').value), plantoes_base: parseInt(document.getElementById('v-t-pb').value) },
+                    "Auxiliar": { ch_semanal: parseInt(document.getElementById('v-a-ch').value), plantoes_base: parseInt(document.getElementById('v-a-pb').value) }
+                }
+            });
+            fecharModais(); carregarVinculos();
+        };
+
         // =========================================================
         // 🧠 CÉREBRO DA ESCALA (ALGORITMO DE SORTEIO E FILTROS)
         // =========================================================
@@ -442,20 +455,17 @@
             btn.disabled = true;
 
             try {
-                // 1. Puxar todos os dados frescos do banco
                 const setoresSnap = await getDocs(collection(db, "setores"));
                 const equipeSnap = await getDocs(query(collection(db, "colaboradores")));
 
                 let setores = []; setoresSnap.forEach(d => setores.push({id: d.id, ...d.data()}));
                 let equipe = []; equipeSnap.forEach(d => equipe.push({id: d.id, ...d.data()}));
 
-                // 2. Setup do Mês e Calendário
                 const mes = parseInt(document.getElementById('gen-mes').value);
                 const ano = parseInt(document.getElementById('gen-ano').value);
                 const numDias = new Date(ano, mes, 0).getDate();
                 const diasSemanaNome = ["dom", "seg", "ter", "qua", "qui", "sex", "sab"];
 
-                // 3. Montar a "Carroçaria" da Tabela dinamicamente
                 let html = `<table class="tabela-escala" id="tabela-escala-final"><thead><tr><th>Dia</th>`;
                 let colunasDeTrabalho = [];
 
@@ -477,17 +487,14 @@
                 });
                 html += `</tr></thead><tbody>`;
 
-                // 4. O Sorteio (Varrendo Dia a Dia)
                 for(let dia = 1; dia <= numDias; dia++) {
                     const dataAtual = new Date(ano, mes - 1, dia);
                     const diaSem = diasSemanaNome[dataAtual.getDay()];
-                    // Formata a data para comparar com afastamentos (YYYY-MM-DD)
                     const dataStr = `${ano}-${String(mes).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
 
                     html += `<tr><td class="td-dia">${String(dia).padStart(2,'0')} (${diaSem.toUpperCase()})</td>`;
 
                     colunasDeTrabalho.forEach(col => {
-                        // Verifica se o setor funciona hoje
                         if(!col.setor.dias_funcionamento[diaSem]) {
                             html += `<td class="col-${col.funcao.substring(0,3).toLowerCase()}" style="background:#eee;">-</td>`;
                             return;
@@ -496,47 +503,39 @@
                         let escaladosNesteTurno = [];
                         
                         for(let vaga = 0; vaga < col.qtd; vaga++) {
-                            // Filtro Nível 1: Regras Inquebráveis (Hard Rules)
                             let candidatos = equipe.filter(c => {
                                 if(c.funcao !== col.funcao || !c.status_ativo) return false;
                                 
-                                // Bloqueio de Férias/Licenças
                                 let afastado = false;
                                 if(c.afastamentos) {
                                     c.afastamentos.forEach(af => { if(dataStr >= af.inicio && dataStr <= af.fim) afastado = true; });
                                 }
                                 if(afastado) return false;
 
-                                // Bloqueio 12x36
                                 if(c.padrao_escala === "12x36_par" && dia % 2 !== 0) return false;
                                 if(c.padrao_escala === "12x36_impar" && dia % 2 === 0) return false;
 
-                                // Para evitar dobradinha no mesmo turno (não escalar 2x o mesmo cara)
                                 if(escaladosNesteTurno.includes(c.nome)) return false;
 
                                 return true;
                             });
 
-                            // Embaralhar a lista para o sorteio ser justo
                             candidatos.sort(() => Math.random() - 0.5);
 
                             let escolhido = null;
                             let avisoFuroRegra = false;
 
-                            // Filtro Nível 2: Preferências (Soft Rules - Plantões Externos)
                             let candidatosLivres = candidatos.filter(c => !(c.restricoes_fixas && c.restricoes_fixas[diaSem]));
 
                             if(candidatosLivres.length > 0) {
-                                escolhido = candidatosLivres[0]; // Pega o primeiro livre
+                                escolhido = candidatosLivres[0];
                             } else if (candidatos.length > 0) {
-                                // Ninguém livre? Pega o primeiro disponível e marca como aviso!
                                 escolhido = candidatos[0];
                                 avisoFuroRegra = true;
                             }
 
                             if(escolhido) {
                                 escaladosNesteTurno.push(escolhido.nome);
-                                // Pega só o primeiro e segundo nome para não ficar gigante na tabela
                                 let nomeCurto = escolhido.nome.split(' ').slice(0, 2).join(' ');
                                 let classeAviso = avisoFuroRegra ? "alerta-regra" : "";
                                 let iconeAviso = avisoFuroRegra ? "⚠️" : "";
@@ -552,7 +551,7 @@
 
                 html += `</tbody></table>`;
                 document.getElementById('tabela-container').innerHTML = html;
-                document.getElementById('filtros-escala').style.display = 'flex'; // Mostra os filtros
+                document.getElementById('filtros-escala').style.display = 'flex';
 
             } catch (e) {
                 console.error("Erro no motor:", e);
@@ -563,7 +562,6 @@
             btn.disabled = false;
         };
 
-        // --- FUNÇÃO PARA EDITAR A ESCALA MÓVEL NA TELA ---
         window.editarCelula = (elemento) => {
             let nomeAtual = elemento.innerText.replace('⚠️', '').trim();
             let novoNome = prompt("Alterar escalado neste turno:\n(Para deixar vazio, apenas apague o texto)", nomeAtual);
@@ -573,24 +571,21 @@
                     elemento.innerHTML = `<span style="color:red; font-weight:bold;">[FALTOU]</span>`;
                 } else {
                     elemento.innerHTML = novoNome.trim();
-                    elemento.style.color = "blue"; // Fica azul para você saber que foi alterado manualmente
+                    elemento.style.color = "blue";
                 }
             }
         };
 
-        // --- FUNÇÃO PARA O FILTRO (Ver Separado ou Juntos) ---
         window.aplicarFiltroTabela = () => {
             const filtro = document.getElementById('filtro-funcao').value;
             const tabela = document.getElementById('tabela-escala-final');
             if(!tabela) return;
 
-            // Pega o prefixo (Ex: "Far", "Téc", "Aux")
             const prefixo = filtro === "TODOS" ? "TODOS" : filtro.substring(0,3).toLowerCase();
 
-            // Esconder/Mostrar colunas do cabeçalho
             const headers = tabela.querySelectorAll('th');
             headers.forEach((th, index) => {
-                if(index === 0) return; // Pula a coluna do "Dia"
+                if(index === 0) return;
                 if(prefixo === "TODOS" || th.classList.contains(`col-${prefixo}`)) {
                     th.style.display = 'table-cell';
                 } else {
@@ -598,12 +593,11 @@
                 }
             });
 
-            // Esconder/Mostrar colunas do corpo
             const linhas = tabela.querySelectorAll('tbody tr');
             linhas.forEach(tr => {
                 const celulas = tr.querySelectorAll('td');
                 celulas.forEach((td, index) => {
-                    if(index === 0) return; // Pula a coluna do "Dia"
+                    if(index === 0) return;
                     if(prefixo === "TODOS" || td.classList.contains(`col-${prefixo}`)) {
                         td.style.display = 'table-cell';
                     } else {
@@ -613,7 +607,6 @@
             });
         };
 
-        // --- FUNÇÃO PARA EXPORTAR EXCEL ---
         window.exportarExcel = () => {
             const tabela = document.getElementById('tabela-escala-final');
             if(!tabela) {
@@ -621,31 +614,11 @@
                 return;
             }
             
-            // O SheetJS (XLSX) lê a tabela HTML diretamente e converte
             const wb = XLSX.utils.table_to_book(tabela, {sheet: "Escala_Plantao_Pro"});
             const mes = document.getElementById('gen-mes').options[document.getElementById('gen-mes').selectedIndex].text;
             const ano = document.getElementById('gen-ano').value;
             
             XLSX.writeFile(wb, `Escala_${mes}_${ano}.xlsx`);
-        };
-        // =========================================================
-
-            const id = document.getElementById('s-id').value === "NOVO" ? document.getElementById('s-sigla').value : document.getElementById('s-id').value;
-            await setDoc(doc(db, "setores", id), dados, { merge: true });
-            fecharModais(); carregarSetores();
-        };
-
-        document.getElementById('btn-save-vinculo').onclick = async () => {
-            const id = document.getElementById('v-id').value === "NOVO" ? document.getElementById('v-nome').value.toUpperCase().replace(/\s+/g, '_') : document.getElementById('v-id').value;
-            await setDoc(doc(db, "vinculos", id), {
-                nome: document.getElementById('v-nome').value,
-                regras: {
-                    "Farmacêutico": { ch_semanal: parseInt(document.getElementById('v-f-ch').value), plantoes_base: parseInt(document.getElementById('v-f-pb').value) },
-                    "Técnico de Farmácia": { ch_semanal: parseInt(document.getElementById('v-t-ch').value), plantoes_base: parseInt(document.getElementById('v-t-pb').value) },
-                    "Auxiliar": { ch_semanal: parseInt(document.getElementById('v-a-ch').value), plantoes_base: parseInt(document.getElementById('v-a-pb').value) }
-                }
-            });
-            fecharModais(); carregarVinculos();
         };
 
         carregarSetores();
